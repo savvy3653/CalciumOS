@@ -31,7 +31,7 @@ typedef struct {
 } __attribute__((packed)) GDT_ptr;
 
 typedef struct {
-    	uint32_t prev_tss;
+    uint32_t prev_tss;
 	uint32_t esp0;
 	uint32_t ss0;
 	uint32_t esp1;

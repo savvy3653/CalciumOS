@@ -1,6 +1,7 @@
 #include "include/vga.h"
 #include "include/stdlib.h"
 #include "include/gdt.h"
+#include "include/idt.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
@@ -14,7 +15,9 @@
 
 void kernel_main(void) {
 	gdt_init();
+	idt_init();
 	vga_init();
+	
 	kprint("Hello, kernel World!");
 	kprintln("penis");
 	kprintln("hello");
