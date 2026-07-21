@@ -1,4 +1,4 @@
-#include "../include/stdlib.h"
+#include "../../include/stdlib.h"
 
 size_t strlen(const char* str)  {
 	size_t len = 0;

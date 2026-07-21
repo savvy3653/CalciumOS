@@ -1,4 +1,6 @@
-#include "src/include/vga.h"
+#include "include/vga.h"
+#include "include/stdlib.h"
+#include "include/gdt.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
@@ -11,6 +13,7 @@
 // #endif
 
 void kernel_main(void) {
+	gdt_init();
 	terminal_initialize();
-	terminal_writestring("Hello, kernel World!\nPenis");
+	terminal_writestring("Hello, kernel World!\nPenis\nhi.");
 }

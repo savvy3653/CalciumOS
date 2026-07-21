@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#include "include/vga.h"
-#include "include/stdlib.h"
+#include "../../include/vga.h"
+#include "../../include/stdlib.h"
 
 size_t terminal_row;
 size_t terminal_column;

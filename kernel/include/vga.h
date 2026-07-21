@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -23,7 +25,7 @@ enum vga_color {
 
 #define VGA_WIDTH   80
 #define VGA_HEIGHT  25
-#define VGA_MEMORY  0xB8000 
+#define VGA_MEMORY  0xC03FF000
 
 extern size_t terminal_row;
 extern size_t terminal_column;
