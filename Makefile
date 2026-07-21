@@ -1,3 +1,9 @@
+CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+LFLAGS = -ffreestanding -O2 -nostdlib
+
+CKERNEL =  kernel/src
+LIBKERNEL = kernel/src/libc
+
 myos.iso: boot.o kernel.o myos
 	mkdir -p isodir/boot/grub
 	cp myos isodir/boot/myos
@@ -8,12 +14,22 @@ boot.o:
 	nasm -f elf32 boot.asm -o boot.o
 
 kernel.o:
-	i686-elf-gcc -c src/stdlib.c -o stdlib.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
-	i686-elf-gcc -c src/vga.c -o vga.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
-	i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
+	i686-elf-gcc -c $(LIBKERNEL)/strlen.c -o strlen.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/memset.c -o memset.o $(CFLAGS)
+	i686-elf-gcc -c $(CKERNEL)/vga.c -o vga.o $(CFLAGS)
+	i686-elf-gcc -c kernel/kernel.c -o kernel.o $(CFLAGS)
 
 myos:
-	i686-elf-gcc -T linker.ld -o myos -ffreestanding -O2 -nostdlib boot.o kernel.o vga.o stdlib.o -lgcc
+	i686-elf-gcc -T linker.ld -o myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o -lgcc
 
 clean:
-	rm myos myos.iso boot.o kernel.o vga.o stdlib.o
+	rm myos myos.iso *.o
+
+#
+# non-compile section
+init:
+	export PREFIX="$HOME/opt/cross"
+	export TARGET=i686-elf
+	export PATH="$PREFIX/bin:$PATH"
+start:
+	qemu-system-i386 -cdrom myos.iso

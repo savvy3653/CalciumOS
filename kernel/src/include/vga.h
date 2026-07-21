@@ -24,6 +24,7 @@ enum vga_color {
 #define VGA_WIDTH   80
 #define VGA_HEIGHT  25
 #define VGA_MEMORY  0xB8000 
+
 extern size_t terminal_row;
 extern size_t terminal_column;
 extern uint8_t terminal_color;
