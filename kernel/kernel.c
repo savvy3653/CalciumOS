@@ -14,6 +14,8 @@
 
 void kernel_main(void) {
 	gdt_init();
-	terminal_initialize();
-	terminal_writestring("Hello, kernel World!\nPenis\nhi.");
+	vga_init();
+	kprint("Hello, kernel World!");
+	kprintln("penis");
+	kprintln("hello");
 }

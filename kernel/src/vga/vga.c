@@ -3,56 +3,63 @@
 #include "../../include/vga.h"
 #include "../../include/stdlib.h"
 
-size_t terminal_row;
-size_t terminal_column;
-uint8_t terminal_color;
-uint16_t* terminal_buffer = (uint16_t*)VGA_MEMORY;
+size_t vga_row;
+size_t vga_column;
+uint8_t vga_color;
+uint16_t* vga_buffer = (uint16_t*)VGA_MEMORY;
 
 
-void terminal_initialize(void) {
-	terminal_row = 0;
-	terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+void vga_init(void) {
+	vga_row = 0;
+	vga_column = 0;
+	vga_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	
 	for (size_t y = 0; y < VGA_HEIGHT; y++) {
 		for (size_t x = 0; x < VGA_WIDTH; x++) {
 			const size_t index = y * VGA_WIDTH + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
+			vga_buffer[index] = vga_entry(' ', vga_color);
 		}
 	}
 }
 
-void terminal_setcolor(uint8_t color) {
-	terminal_color = color;
+void vga_setcolor(uint8_t color) {
+	vga_color = color;
 }
 
-void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
+void vga_putentryat(char c, uint8_t color, size_t x, size_t y) {
 	const size_t index = y * VGA_WIDTH + x;
-	terminal_buffer[index] = vga_entry(c, color);
+	vga_buffer[index] = vga_entry(c, color);
 }
 
-void terminal_putchar(char c) {
+void vga_putchar(char c) {
 	// escape sequences
 	if (c == '\n') {
-		terminal_column = 0;
-		terminal_putentryat(' ', terminal_color, terminal_column, ++terminal_row);
+		vga_column = 0;
+		vga_putentryat(' ', vga_color, vga_column, ++vga_row);
 		return;
 	}
 
 	// default
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH) {
-		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT)
-			terminal_row = 0;
+	vga_putentryat(c, vga_color, vga_column, vga_row);
+	if (++vga_column == VGA_WIDTH) {
+		vga_column = 0;
+		if (++vga_row == VGA_HEIGHT)
+			vga_row = 0;
 	}
 }
 
-void terminal_write(const char* data, size_t size)  {
+
+// PRINT FUNCTIONS
+void kputchar(const char* data, size_t size)  {
 	for (size_t i = 0; i < size; i++)
-		terminal_putchar(data[i]);
+		vga_putchar(data[i]);
 }
 
-void terminal_writestring(const char* data) {
-	terminal_write(data, strlen(data));
+void kprint(const char* data) {
+	kputchar(data, strlen(data));
+}
+
+void kprintln(const char* data) {
+	kputchar(data, strlen(data));
+	kputchar("\n", 1);
 }
