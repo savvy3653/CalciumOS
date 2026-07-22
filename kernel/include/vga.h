@@ -46,3 +46,4 @@ void vga_putentryat(char c, uint8_t color, size_t x, size_t y);
 void vga_putchar(char c);
 void kputchar(const char* data, size_t size);
 void kprint(const char* data);
+void kprintln(const char* data);

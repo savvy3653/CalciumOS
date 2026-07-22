@@ -21,4 +21,5 @@ void kernel_main(void) {
 	kprint("Hello, kernel World!");
 	kprintln("penis");
 	kprintln("hello");
+	int a = 1 / 0;
 }
