@@ -7,6 +7,8 @@ extern void idt_flush(uint32_t);
 IDT_entry_table idt_entries[256];
 IDT_ptr pidt;
 
+void* irq_routines[16] = {NULL};
+
 const char* exception_messages[] = {
     "Division By Zero",
     "Debug",
@@ -27,9 +29,9 @@ const char* exception_messages[] = {
     "Coprocessor Fault",
     "Alignment Fault",
     "Machine Check", 
-    "Reserved",
-    "Reserved",
-    "Reserved",
+    "SIMD Floating-Point Exception",
+    "Virtualization Exception",
+    "Control Protection Exception",
     "Reserved",
     "Reserved",
     "Reserved",
@@ -41,6 +43,7 @@ const char* exception_messages[] = {
     "Reserved",
     "Reserved"
 };
+
 
 void idt_init() {
     pidt.size = sizeof(idt_entries) - 1;
@@ -119,36 +122,6 @@ void idt_init() {
     idt_flush((uint32_t)&pidt);
 }
 
-void isr_handler(INT_registers* regs) {
-    if (regs->int_no < 32) {
-        kprintln(exception_messages[regs->int_no]);
-        kprintln("Exception! System halted!");
-        switch (regs->int_no)
-        {
-        case 14:
-            break;
-        default:
-            break;
-        }
-        kpanic();
-    }
-}
-
-void irq_handler(INT_registers* regs) {
-    if (regs->int_no < 32) {
-        kprintln(exception_messages[regs->int_no]);
-        kprintln("Exception! System halted!");
-        switch (regs->int_no)
-        {
-        case 14:
-            break;
-        default:
-            break;
-        }
-        kpanic();
-    }
-}
-
 void encode_idt_entry(IDT_entry_table* entry, uint32_t offset, 
                       uint16_t segment_selector, uint8_t gate_type,
                       uint8_t dpl, uint8_t p) 
@@ -162,4 +135,46 @@ void encode_idt_entry(IDT_entry_table* entry, uint32_t offset,
     entry->p = p & 0x1;
     entry->offset_high = (offset >> 16) & 0xFFFF;
 }
+
+
+// ISR
+void isr_handler(INT_registers* regs) {
+    if (regs->int_no < 32) {
+        kprintln(exception_messages[regs->int_no]);
+        kprintln("Exception! System halted!");
+        switch (regs->int_no) {
+		case 0:
+
+			break;
+        case 14:
+            break;
+        default:
+            break;
+        }
+        kpanic();
+    }
+}
+
+
+// IRQ stuff
+void irq_install_routine(uint8_t irq, void (*handler)(INT_registers* regs)) {
+	irq_routines[irq] = (void*)handler;
+}
+
+void irq_uninstall_routine(uint8_t irq) {
+	irq_routines[irq] = NULL;
+}
+
+void irq_handler(INT_registers* regs) {
+	uint8_t irq_no = regs->int_no - 32; 
+	void (*handler)(INT_registers* regs);
+
+	handler = (void(*)(INT_registers* regs))irq_routines[irq_no];
+	if (handler)
+		handler(regs);
+
+	PIC_sendEOI(irq_no);
+}
+
+
 
