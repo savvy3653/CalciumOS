@@ -23,6 +23,8 @@ void vga_init(void) {
 			vga_buffer[index] = vga_entry(' ', vga_color);
 		}
 	}
+	enable_cursor(0, 2);
+	update_cursor(1, 4);
 }
 
 void vga_setcolor(uint8_t color) {
@@ -32,26 +34,45 @@ void vga_setcolor(uint8_t color) {
 void vga_putentryat(char c, uint8_t color, size_t x, size_t y) {
 	const size_t index = y * VGA_WIDTH + x;
 	vga_buffer[index] = vga_entry(c, color);
+	update_cursor(x, y+1);
 }
 
 int vga_putchar(char c) {
 	// escape sequences
-	if (c == '\n') {
-		vga_column = 0;
-		vga_putentryat(' ', vga_color, vga_column, ++vga_row);
-		return 1;
-	} else if (c == '\0') {
-		return 0;
+	switch(c) {
+		case '\0':
+			return 0;
+		case '\n':
+			vga_column = 0;
+			vga_putentryat(' ', vga_color, vga_column, ++vga_row);
+			return 1;
+		case '\t':
+			if (vga_column + 4 > VGA_WIDTH) {
+				vga_putchar('\n');	// go to newline if no space for \t
+			} else {
+				for (int i = 0; i < 4; i++) {
+					vga_putentryat(' ', vga_color, ++vga_column, vga_row);
+				}
+			}
+			return 1;
+			break;
+		case '\b':
+			if ((vga_column - 1 < 0) && (vga_row - 1 > 0)) {
+				vga_column = 0;
+				vga_putentryat(' ', vga_color, vga_column, --vga_row);
+			} else {
+				vga_putentryat(' ', vga_color, --vga_column, vga_row);
+			}
+			break;
+		default:
+			vga_putentryat(c, vga_color, vga_column, vga_row);
+			if (++vga_column == VGA_WIDTH) {
+				vga_column = 0;
+				if (++vga_row == VGA_HEIGHT)
+					vga_row = 0;
+			}
+			return 1;		
 	}
-
-	// default
-	vga_putentryat(c, vga_color, vga_column, vga_row);
-	if (++vga_column == VGA_WIDTH) {
-		vga_column = 0;
-		if (++vga_row == VGA_HEIGHT)
-			vga_row = 0;
-	}
-	return 1;
 }
 
 
@@ -72,7 +93,7 @@ void kprintln(const char* data) {
 
 
 // RED SCREEN
-void rs_init() {
+void rs_init(void) {
 	vga_fg = VGA_COLOR_WHITE;
 	vga_bg = VGA_COLOR_RED;
 	vga_init();
