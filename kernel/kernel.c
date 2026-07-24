@@ -2,7 +2,9 @@
 #include "include/stdlib.h"
 #include "include/gdt.h"
 #include "include/idt.h"
+#include "include/keyboard.h"
 
+extern void hang(void);
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
 // #error "You are not using a cross-compiler, you will most certainly run into trouble"
@@ -16,10 +18,15 @@
 void kernel_main(void) {
 	gdt_init();
 	idt_init();
+	//irq_install_routine();
 	vga_init();
 	
-	kprint("Hello, kernel World!");
-	kprintln("penis");
-	kprintln("hello");
-	int a = 1 / 0;
+	// TODO: defines for irq
+	keyboard_init();
+
+	kprintln(" CalciumOS System Release 0.1 (gcc-15.2.0)");
+	kprintln(" Copyright (C) 2026 savvy3653");
+	kprintln(" All rights reserved.");
+
+	hang();
 }

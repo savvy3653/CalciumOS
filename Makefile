@@ -21,13 +21,14 @@ kernel.o:
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/idt.c -o idt.o $(CFLAGS)
+	i686-elf-gcc -c $(CKERNEL)/drivers/keyboard.c -o keyboard.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/pic/send_eoi.c -o send_eoi.o $(CFLAGS)
 	i686-elf-gcc -c kernel/kernel.c -o kernel.o $(CFLAGS)
 	nasm -f elf32 -g kernel/src/dt/gdt.asm -o gdtasm.o
 	nasm -f elf32 -g kernel/src/dt/idt.asm -o idtasm.o
 
 myos:
-	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o -lgcc
+	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o -lgcc
 
 clean:
 	rm myos myos.iso *.o

@@ -70,10 +70,10 @@ void idt_init() {
     encode_idt_entry(&idt_entries[0], (uint32_t)&isr0, 0x08, 0xE, 0, 1);
     encode_idt_entry(&idt_entries[1], (uint32_t)&isr1, 0x08, 0xF, 0, 1);
     encode_idt_entry(&idt_entries[2], (uint32_t)&isr2, 0x08, 0xE, 0, 1);
-    encode_idt_entry(&idt_entries[3], (uint32_t)&isr0, 0x08, 0xF, 0, 1);
-    encode_idt_entry(&idt_entries[4], (uint32_t)&isr0, 0x08, 0xF, 0, 1);
-    encode_idt_entry(&idt_entries[5], (uint32_t)&isr0, 0x08, 0xE, 0, 1);
-    encode_idt_entry(&idt_entries[6], (uint32_t)&isr0, 0x08, 0xE, 0, 1);
+    encode_idt_entry(&idt_entries[3], (uint32_t)&isr3, 0x08, 0xF, 0, 1);
+    encode_idt_entry(&idt_entries[4], (uint32_t)&isr4, 0x08, 0xF, 0, 1);
+    encode_idt_entry(&idt_entries[5], (uint32_t)&isr5, 0x08, 0xE, 0, 1);
+    encode_idt_entry(&idt_entries[6], (uint32_t)&isr6, 0x08, 0xE, 0, 1);
     encode_idt_entry(&idt_entries[7], (uint32_t)&isr7, 0x08, 0xE, 0, 1);
     encode_idt_entry(&idt_entries[8], (uint32_t)&isr8, 0x08, 0xE, 0, 1);
     encode_idt_entry(&idt_entries[9], (uint32_t)&isr9, 0x08, 0xE, 0, 1);
@@ -140,6 +140,7 @@ void encode_idt_entry(IDT_entry_table* entry, uint32_t offset,
 // ISR
 void isr_handler(INT_registers* regs) {
     if (regs->int_no < 32) {
+        rs_init();
         kprintln(exception_messages[regs->int_no]);
         kprintln("Exception! System halted!");
         switch (regs->int_no) {

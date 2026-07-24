@@ -23,6 +23,8 @@ typedef struct {
 void encode_idt_entry(IDT_entry_table* entry, uint32_t offset, 
                       uint16_t segment_selector, uint8_t gate_type,
                       uint8_t dpl, uint8_t p);
+void irq_install_routine(uint8_t irq, void (*handler)(INT_registers* regs));
+void irq_uninstall_routine(uint8_t irq);
 void isr_handler(INT_registers* regs);
 void irq_handler(INT_registers* regs);
 void idt_init();

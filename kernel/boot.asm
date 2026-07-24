@@ -70,6 +70,7 @@ done_map:
     jmp ecx
 
 section .text
+global hang
 higher_half:
     mov dword [boot_page_directory + 0], 0
 

@@ -5,6 +5,9 @@
 
 size_t vga_row;
 size_t vga_column;
+
+enum vga_color vga_fg = VGA_COLOR_LIGHT_GREY;
+enum vga_color vga_bg = VGA_COLOR_BLACK;
 uint8_t vga_color;
 uint16_t* vga_buffer = (uint16_t*)VGA_MEMORY;
 
@@ -12,7 +15,7 @@ uint16_t* vga_buffer = (uint16_t*)VGA_MEMORY;
 void vga_init(void) {
 	vga_row = 0;
 	vga_column = 0;
-	vga_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	vga_color = vga_entry_color(vga_fg, vga_bg);
 	
 	for (size_t y = 0; y < VGA_HEIGHT; y++) {
 		for (size_t x = 0; x < VGA_WIDTH; x++) {
@@ -31,12 +34,14 @@ void vga_putentryat(char c, uint8_t color, size_t x, size_t y) {
 	vga_buffer[index] = vga_entry(c, color);
 }
 
-void vga_putchar(char c) {
+int vga_putchar(char c) {
 	// escape sequences
 	if (c == '\n') {
 		vga_column = 0;
 		vga_putentryat(' ', vga_color, vga_column, ++vga_row);
-		return;
+		return 1;
+	} else if (c == '\0') {
+		return 0;
 	}
 
 	// default
@@ -46,6 +51,7 @@ void vga_putchar(char c) {
 		if (++vga_row == VGA_HEIGHT)
 			vga_row = 0;
 	}
+	return 1;
 }
 
 
@@ -62,4 +68,12 @@ void kprint(const char* data) {
 void kprintln(const char* data) {
 	kputchar(data, strlen(data));
 	kputchar("\n", 1);
+}
+
+
+// RED SCREEN
+void rs_init() {
+	vga_fg = VGA_COLOR_WHITE;
+	vga_bg = VGA_COLOR_RED;
+	vga_init();
 }
