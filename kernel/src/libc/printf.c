@@ -1,81 +1,128 @@
 #include <limits.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "../../include/stdlib.h"
+#include "../../include/stdio.h"
 
-static bool print(const char* data, size_t length) {
-	const unsigned char* bytes = (const unsigned char*) data;
-	for (size_t i = 0; i < length; i++)
-		if (putchar(bytes[i]) == EOF)
-			return false;
-	return true;
+void kprintf(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char buf[256]; // string buffer
+    char* p = buf;
+    int state = PRINTF_STATE_START;
+    int length = PRINTF_LENGTH_START;
+    int radix = 10;
+    bool sign = false;
+
+    while (*fmt) {
+        switch (state) {
+        case PRINTF_STATE_START:
+            if (*fmt == '%') {
+                state = PRINTF_STATE_LENGTH;
+            } else {
+                *p++ = *fmt;
+            }
+            break;
+        case PRINTF_STATE_LENGTH:
+            if (*fmt == 'h') {
+                length = PRINTF_LENGTH_SHORT;
+                state = PRINTF_STATE_SHORT;
+            } else if (*fmt == 'l') {
+                length = PRINTF_LENGTH_LONG;
+                state = PRINTF_STATE_LONG;
+            } else {
+                state = PRINTF_STATE_SPEC;
+                goto SPEC;
+            }
+            break;
+        case PRINTF_STATE_SHORT:
+            if (*fmt == 'h') {
+                length = PRINTF_LENGTH_SHORT_SHORT;
+            }
+            state = PRINTF_STATE_SPEC;
+            // fallthrough
+        case PRINTF_STATE_LONG:
+            if (state == PRINTF_STATE_LONG && *fmt == 'l') {
+                length = PRINTF_LENGTH_LONG_LONG;
+            }
+            state = PRINTF_STATE_SPEC;
+            // fallthrough
+        case PRINTF_STATE_SPEC:
+        SPEC:
+            switch (*fmt) {
+            case 'c':
+                *p++ = (char)va_arg(args, int);
+                break;
+            case 's':
+                {
+                    const char* s = va_arg(args, const char*);
+                    while (*s) *p++ = *s++;
+                }
+                break;
+            case '%':
+                *p++ = '%';
+                break;
+            case 'd': case 'i':
+                sign = true; radix = 10;
+                p += printf_number(p, args, length, sign, radix);
+                break;
+            case 'u':
+                sign = false; radix = 10;
+                p += printf_number(p, args, length, sign, radix);
+                break;
+            case 'x': case 'X': case 'p':
+                sign = false; radix = 16;
+                p += printf_number(p, args, length, sign, radix);
+                break;
+            case 'o':
+                sign = false; radix = 8;
+                p += printf_number(p, args, length, sign, radix);
+                break;
+            default:
+                // unknown specifier. ignore.
+                break;
+            }
+            // reset the condition
+            state = PRINTF_STATE_START;
+            length = PRINTF_LENGTH_START;
+            radix = 10;
+            sign = false;
+            break;
+        }
+        fmt++;
+    }
+    *p = '\0';
+    va_end(args);
+
+    // string is ready. kprint
+    kprint(buf);
 }
 
-int printf(const char* restrict format, ...) {
-	va_list parameters;
-	va_start(parameters, format);
+const char possibleChars[] = "0123456789abcdef";
 
-	int written = 0;
+int printf_number(char* dest, va_list args, int length, bool sign, int radix) {
+    uint32_t number = 0;
+    int number_sign = 1;
+    char tmp[32];
+    int pos = 0;
 
-	while (*format != '\0') {
-		size_t maxrem = INT_MAX - written;
+    if (sign) {
+        int32_t n = va_arg(args, int32_t);
+        if (n < 0) { n = -n; number_sign = -1; }
+        number = (uint32_t)n;
+    } else {
+        number = va_arg(args, uint32_t);
+    }
 
-		if (format[0] != '%' || format[1] == '%') {
-			if (format[0] == '%')
-				format++;
-			size_t amount = 1;
-			while (format[amount] && format[amount] != '%')
-				amount++;
-			if (maxrem < amount) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, amount))
-				return -1;
-			format += amount;
-			written += amount;
-			continue;
-		}
+    do {
+        tmp[pos++] = possibleChars[number % radix];
+        number /= radix;
+    } while (number);
 
-		const char* format_begun_at = format++;
+    if (sign && number_sign < 0) tmp[pos++] = '-';
 
-		if (*format == 'c') {
-			format++;
-			char c = (char) va_arg(parameters, int /* char promotes to int */);
-			if (!maxrem) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(&c, sizeof(c)))
-				return -1;
-			written++;
-		} else if (*format == 's') {
-			format++;
-			const char* str = va_arg(parameters, const char*);
-			size_t len = strlen(str);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(str, len))
-				return -1;
-			written += len;
-		} else {
-			format = format_begun_at;
-			size_t len = strlen(format);
-			if (maxrem < len) {
-				// TODO: Set errno to EOVERFLOW.
-				return -1;
-			}
-			if (!print(format, len))
-				return -1;
-			written += len;
-			format += len;
-		}
-	}
-
-	va_end(parameters);
-	return written;
+    // reversing
+    for (int i = pos - 1; i >= 0; --i) {
+        *dest++ = tmp[i];
+    }
+    return pos;
 }

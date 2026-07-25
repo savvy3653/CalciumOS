@@ -4,6 +4,24 @@
 
 #include "stdlib.h"
 
+// IRQ's
+#define INT_TIMER 0
+#define INT_KEYBOARD 1
+#define INT_CASCADE 2
+#define INT_COM2 3
+#define INT_COM1 4
+#define INT_LPT2 5
+#define INT_FLOPPY 6
+#define INT_LPT1 7
+#define INT_CMOS 8
+#define INT_RESERVED0 9     // Free for peripherals / legacy SCSI / NIC 
+#define INT_RESEDVED1 10    // Free for peripherals / SCSI / NIC 
+#define INT_RESERVED2 11    // Free for peripherals / SCSI / NIC 
+#define INT_PS2MOUSE 12
+#define INT_FPUCOPROCESSOR 13
+#define INT_PRIMARYATA 14
+#define INT_SECONDARYATA 15
+
 typedef struct {
     uint16_t offset_low;
     uint16_t segment_selector;

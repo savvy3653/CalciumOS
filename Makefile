@@ -18,6 +18,10 @@ boot.o:
 kernel.o:
 	i686-elf-gcc -c $(LIBKERNEL)/strlen.c -o strlen.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/memset.c -o memset.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/memmove.c -o memmove.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/memcpy.c -o memcpy.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/memcmp.c -o memcmp.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/printf.c -o printf.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
@@ -29,7 +33,7 @@ kernel.o:
 	nasm -f elf32 -g kernel/src/dt/idt.asm -o idtasm.o
 
 myos:
-	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o -lgcc
+	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o -lgcc
 
 clean:
 	rm myos myos.iso *.o

@@ -1,5 +1,6 @@
 #include "include/vga.h"
 #include "include/stdlib.h"
+#include "include/stdio.h"
 #include "include/gdt.h"
 #include "include/idt.h"
 #include "include/keyboard.h"
@@ -21,13 +22,14 @@ void kernel_main(void) {
 	//irq_install_routine();
 	vga_init();
 	
-	// TODO: defines for irq
 	keyboard_init();
 
 	kprintln(" CalciumOS System Release 0.1 (gcc-15.2.0)");
 	kprintln(" Copyright (C) 2026 savvy3653");
 	kprintln(" All rights reserved.");
 	update_cursor(vga_column, vga_row+1);
+	int a = 8;
+	kprintf("byte %d", a);
 
 	hang();
 }

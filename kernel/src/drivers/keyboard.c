@@ -61,16 +61,113 @@ const uint32_t uppercase[128] = {
     UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN
 };
 
+bool capsOn;
+bool capsLock;
 
 void keyboard_init() {
-    irq_install_routine(1, &keyboard_handler);
+    irq_install_routine(INT_KEYBOARD, &keyboard_handler);
 }
 
+static bool extended = false;
 void keyboard_handler(INT_registers* regs) {
     uint8_t bbyte = inb(0x60);  // buffer byte
 
-    uint8_t scan_code = bbyte & 0x7F;
-    bool pressed = bbyte & 0x80;
+    // what key is pressed
+    if (bbyte == 0xE0) {    // extended keys
+        extended = true;
+        return;
+    } 
 
-    if (!pressed) vga_putchar(lowercase[scan_code]);
+    char scanCode = bbyte & 0x7F;
+    // press down or released
+    char press = bbyte & 0x80;
+    if (extended) {
+        if (!press) {
+            switch(scanCode) {
+                case 0x4B:  // left arrow
+                    if (vga_column > 1) {
+                        update_cursor(--vga_column, vga_row+1); 
+                    } 
+#ifdef KEYBOARD_EXT
+                    else if (vga_row > 0) {
+                        vga_column = VGA_WIDTH - 1;
+                        update_cursor(vga_column, --vga_row+1);
+                    }
+#endif
+                    break;
+                case 0x4D:  // right arrow
+                    if (vga_column < VGA_WIDTH - 1) {
+                        update_cursor(++vga_column, vga_row+1); 
+                    } 
+#ifdef KEYBOARD_EXT
+                    else if (vga_row < VGA_HEIGHT - 1) {
+                        vga_column = 0;
+                        update_cursor(vga_column, ++vga_row+1);
+                    }
+#endif
+                    break;
+                case 0x48:  // up arrow
+#ifdef KEYBOARD_EXT
+                    if (vga_row > 0) {
+                        update_cursor(vga_column, --vga_row+1);
+                    }
+#endif
+                    break;
+                case 0x50:  // down arrow
+#ifdef KEYBOARD_EXT
+                    if (vga_row < VGA_HEIGHT - 1) {
+                        update_cursor(vga_column, ++vga_row+1);
+                    }
+#endif
+                    break;
+                default:
+                    break;
+            }
+        }
+    } else {
+        switch(scanCode) {
+            case 1:
+            case 29:
+            case 56:
+            case 59:
+            case 60:
+            case 61:
+            case 62:
+            case 63:
+            case 64:
+            case 65:
+            case 66:
+            case 67:
+            case 68:
+            case 87:
+            case 88:
+                break;
+            case 42:
+                // shift key
+                if (press == 0) {
+                    capsOn = true;
+                } else {
+                    capsOn = false;
+                }
+                break;
+            case 58:
+                if (!capsLock && press == 0) {
+                    capsLock = true;
+                } else if (capsLock && press == 0) {
+                    capsLock = false;
+                }
+                break;
+            default:
+                if (press == 0) {
+                    if (capsOn && capsLock) {
+                        kprintf("%c", lowercase[scanCode]);
+                    } else if (capsOn || capsLock) {
+                        kprintf("%c", uppercase[scanCode]);
+                    } else {
+                        kprintf("%c", lowercase[scanCode]);
+                    }
+                }
+        }
+    }
+    extended = false;
 }

@@ -17,6 +17,9 @@ SECTIONS
        }
 
 	. += 0xC0000000;
+    __kernel_physical_start = . - 0xC0000000;
+    __kernel_virtual_start = .;
+
 	/* Add a symbol that indicates the start address of the kernel. */
 	.text ALIGN (4K) : AT (ADDR (.text) - 0xC0000000)
 	{
@@ -38,4 +41,7 @@ SECTIONS
 	}
 	/* Add a symbol that indicates the end address of the kernel. */
 	_kernel_end = .;
+
+	__kernel_physical_end = . - 0xC0000000;
+	__kernel_virtual_end = .;
 }
