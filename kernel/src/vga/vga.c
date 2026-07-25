@@ -41,6 +41,7 @@ int vga_putchar(char c) {
 	switch(c) {
 		case '\0':
 			return 0;
+
 		case '\n':
 			vga_column = 0;
 			if (vga_row < 2) {
@@ -51,6 +52,8 @@ int vga_putchar(char c) {
 				update_cursor(vga_column, vga_row+1);
 			}
 			return 1;
+			break;
+
 		case '\t':
 			if (vga_column + 4 > VGA_WIDTH) {
 				vga_putchar('\n');	// go to newline if no space for \t
@@ -61,16 +64,14 @@ int vga_putchar(char c) {
 			}
 			return 1;
 			break;
+
 		case '\b':
-			// back to previous line
-			if ((vga_column - 1 < 0) && (vga_row - 1 > 2)) {
-				vga_column = 0;
-				vga_putentryat(' ', vga_color, vga_column, --vga_row);
-			// regular backspace
-			} else if ((vga_column - 1 > 0) && (vga_row > 2)) {
+			if ((vga_column > 1) && (vga_row > 2)) {
 				vga_putentryat(' ', vga_color, --vga_column, vga_row);
 			}
+			return 1;
 			break;
+
 		default:
 			vga_putentryat(c, vga_color, vga_column, vga_row);
 			if (++vga_column == VGA_WIDTH) {
@@ -78,7 +79,9 @@ int vga_putchar(char c) {
 				if (++vga_row == VGA_HEIGHT)
 					vga_row = 0;
 			}
-			return 1;		
+			update_cursor(vga_column, vga_row+1);
+			return 1;	
+			break;	
 	}
 }
 
