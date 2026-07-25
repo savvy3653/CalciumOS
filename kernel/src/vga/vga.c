@@ -24,7 +24,6 @@ void vga_init(void) {
 		}
 	}
 	enable_cursor(0, 2);
-	update_cursor(1, 4);
 }
 
 void vga_setcolor(uint8_t color) {
@@ -44,7 +43,13 @@ int vga_putchar(char c) {
 			return 0;
 		case '\n':
 			vga_column = 0;
-			vga_putentryat(' ', vga_color, vga_column, ++vga_row);
+			if (vga_row < 2) {
+				vga_putentryat(' ', vga_color, vga_column, ++vga_row);
+			}
+			else {
+				vga_putentryat('>', vga_color, vga_column++, ++vga_row);
+				update_cursor(vga_column, vga_row+1);
+			}
 			return 1;
 		case '\t':
 			if (vga_column + 4 > VGA_WIDTH) {
@@ -57,10 +62,12 @@ int vga_putchar(char c) {
 			return 1;
 			break;
 		case '\b':
-			if ((vga_column - 1 < 0) && (vga_row - 1 > 0)) {
+			// back to previous line
+			if ((vga_column - 1 < 0) && (vga_row - 1 > 2)) {
 				vga_column = 0;
 				vga_putentryat(' ', vga_color, vga_column, --vga_row);
-			} else {
+			// regular backspace
+			} else if ((vga_column - 1 > 0) && (vga_row > 2)) {
 				vga_putentryat(' ', vga_color, --vga_column, vga_row);
 			}
 			break;
