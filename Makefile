@@ -26,14 +26,16 @@ kernel.o:
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/idt.c -o idt.o $(CFLAGS)
+	i686-elf-gcc -c $(CKERNEL)/memory/vmm.c -o vmm.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/drivers/keyboard.c -o keyboard.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/pic/send_eoi.c -o send_eoi.o $(CFLAGS)
 	i686-elf-gcc -c kernel/kernel.c -o kernel.o $(CFLAGS)
 	nasm -f elf32 -g kernel/src/dt/gdt.asm -o gdtasm.o
 	nasm -f elf32 -g kernel/src/dt/idt.asm -o idtasm.o
+	nasm -f elf32 -g kernel/src/memory/paging.asm -o paging.o
 
 myos:
-	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o -lgcc
+	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o vmm.o paging.o -lgcc
 
 clean:
 	rm myos myos.iso *.o

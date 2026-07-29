@@ -96,10 +96,10 @@ void kprint(const char* data) {
 	kputchar(data, strlen(data));
 }
 
-void kprintln(const char* data) {
-	kputchar(data, strlen(data));
-	kputchar("\n", 1);
-}
+// void kprintln(const char* data) {
+// 	kputchar(data, strlen(data));
+// 	kputchar("\n", 1);
+// }
 
 
 // RED SCREEN

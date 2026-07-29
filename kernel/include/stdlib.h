@@ -24,6 +24,9 @@ int memcmp(const void* ptr1, const void* ptr2, size_t N);
 
 //
 // custom 
+
+#define ERRCODE -1
+
 static inline void kpanic() {
     asm volatile ("cli": : :"memory");
     while (true) {

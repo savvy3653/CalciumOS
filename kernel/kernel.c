@@ -1,4 +1,5 @@
 #include "include/vga.h"
+#include "include/memory.h"
 #include "include/stdlib.h"
 #include "include/stdio.h"
 #include "include/gdt.h"
@@ -19,14 +20,15 @@ extern void hang(void);
 void kernel_main(void) {
 	gdt_init();
 	idt_init();
-	//irq_install_routine();
+	vmm_init();
 	vga_init();
 	
+	// interrupt handlers
 	keyboard_init();
 
-	kprintln(" CalciumOS System Release 0.1 (gcc-15.2.0)");
-	kprintln(" Copyright (C) 2026 savvy3653");
-	kprintln(" All rights reserved.");
+	kprintf(" CalciumOS System Release 0.1 (gcc-15.2.0)\n");
+	kprintf(" Copyright (C) 2026 savvy3653\n");
+	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 	int a = 8;
 	kprintf("byte %d", a);
