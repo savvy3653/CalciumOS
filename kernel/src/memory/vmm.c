@@ -2,7 +2,7 @@
 #include "../../include/stdlib.h"
 
 extern void set_page_dir(unsigned int*);
-
+//extern void tlb_flush(intptr_t);
 //VMM_block* vmm_blocks;
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
@@ -43,15 +43,17 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
         pd[pdindex] = ((uint32_t)new_pt_phys) | 0x03;
 
         uint32_t* new_pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
-        asm volatile("invlpg (%0)" :: "r"(new_pt) : "memory");
+        tlb_flush(new_pt);
         memset(new_pt, 0, 1024);
     }
 
     uint32_t* pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
     pt[ptindex] = ((uint32_t)paddr) | (flags & 0xFFF) | 0x01;
 
-    asm volatile("invlpg (%0)" :: "r"(vaddr) : "memory");
+    tlb_flush(vaddr);
 
     return vaddr;
 }
+
+
 

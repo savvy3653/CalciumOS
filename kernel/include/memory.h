@@ -46,6 +46,9 @@ void vmm_init();
 intptr_t vmm_alloc_block(size_t size, uint32_t flags); // returns virt address
 int16_t vmm_find_free_block(); // returns index in page table
 void vmm_free_block(int16_t index);
+static inline void tlb_flush(intptr_t addr) {
+    asm volatile("invlpg (%0)" :: "r"(addr) : "memory");
+}
 
 
 void* kmalloc(size_t size);
