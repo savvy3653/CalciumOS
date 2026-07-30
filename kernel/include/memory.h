@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 // FLAGS
 #define FREE 0
@@ -14,12 +15,16 @@ extern uintptr_t __kernel_virtual_start;
 extern uintptr_t __kernel_physical_end;
 extern uintptr_t __kernel_virtual_end;
 
+extern uint32_t page_directory[1024] __attribute__((aligned(4096)));
+extern uint32_t page_table[1024] __attribute__((aligned(4096)));
+
 typedef struct {
     uintptr_t paddr;
     uint8_t flags;
     uint16_t ref_count;
 } PMM_block;
 
+/*
 typedef struct {
     uintptr_t vstart;
     uintptr_t pstart;
@@ -27,16 +32,20 @@ typedef struct {
     uint32_t flags;
     bool used;
 } VMM_block;
+*/
 
 // Physical memory manager
 void pmm_init();    // 
-uintptr_t pmm_alloc_block(); // returns phys address
+intptr_t pmm_alloc_block(); // returns phys address
 int16_t pmm_find_free_block(); // return index in pmm_blocks
-void pmm_free_block();
+void pmm_free_block(int16_t index);
 
 
 // Virtual memory manager
 void vmm_init();
-uintptr_t vmm_alloc_block(); // returns virt address
+intptr_t vmm_alloc_block(size_t size, uint32_t flags); // returns virt address
 int16_t vmm_find_free_block(); // returns index in page table
-void vmm_free_block();
+void vmm_free_block(int16_t index);
+
+
+void* kmalloc(size_t size);

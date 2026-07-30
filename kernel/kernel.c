@@ -20,6 +20,7 @@ extern void hang(void);
 void kernel_main(void) {
 	gdt_init();
 	idt_init();
+    pmm_init();
 	vmm_init();
 	vga_init();
 	
@@ -30,8 +31,10 @@ void kernel_main(void) {
 	kprintf(" Copyright (C) 2026 savvy3653\n");
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
-	int a = 8;
-	kprintf("byte %d", a);
+
+	int* ptr = kmalloc(sizeof(int));
+    *ptr = 1488;
+    kprintf("%d\n", *ptr);
 
 	hang();
 }

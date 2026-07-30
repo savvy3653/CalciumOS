@@ -22,8 +22,7 @@ int printf(const char* restrict format, ...);
 int memcmp(const void* ptr1, const void* ptr2, size_t N);
 
 
-//
-// custom 
+// custom
 
 #define ERRCODE -1
 

@@ -12,9 +12,9 @@ void pmm_init() {
     } 
 }   
 
-uintptr_t pmm_alloc_block() {
+intptr_t pmm_alloc_block() {
     int16_t index = pmm_find_free_block();
-    if (index == -1) {
+    if (index == ERRCODE) {
         kprint("Memory is full!");
         return ERRCODE;
     }
@@ -32,3 +32,8 @@ int16_t pmm_find_free_block() {
     }
     return ERRCODE; // no free blocks
 }
+
+void pmm_free_block(int16_t index) {
+    pmm_blocks[index].flags = FREE;
+    pmm_blocks[index].ref_count--;
+}   
