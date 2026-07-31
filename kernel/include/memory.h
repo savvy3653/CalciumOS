@@ -8,7 +8,7 @@
 #define RESERVED 2
 
 #define HEAP_BASE   0x10000000  // 256 MiB
-#define HEAP_END    0x30000000  // 768 MiB (131 072 chunks of 4KiB blocks??)
+#define HEAP_END    0x20000000  
 
 extern uintptr_t __kernel_physical_start; 
 extern uintptr_t __kernel_virtual_start;
@@ -24,15 +24,15 @@ typedef struct {
     uint16_t ref_count;
 } PMM_block;
 
-/*
+
 typedef struct {
-    uintptr_t vstart;
-    uintptr_t pstart;
+    //uintptr_t vstart;
+    //uintptr_t pstart;
     uint32_t size;
-    uint32_t flags;
+    //uint32_t flags;
     bool used;
 } VMM_block;
-*/
+
 
 // Physical memory manager
 void pmm_init();    // 
@@ -45,10 +45,11 @@ void pmm_free_block(int16_t index);
 void vmm_init();
 intptr_t vmm_alloc_block(size_t size, uint32_t flags); // returns virt address
 int16_t vmm_find_free_block(); // returns index in page table
-void vmm_free_block(int16_t index);
+void vmm_free_block(intptr_t vaddr);
 static inline void tlb_flush(intptr_t addr) {
     asm volatile("invlpg (%0)" :: "r"(addr) : "memory");
 }
 
 
 void* kmalloc(size_t size);
+void kfree(void* ptr);

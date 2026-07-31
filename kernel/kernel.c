@@ -33,8 +33,11 @@ void kernel_main(void) {
 	update_cursor(vga_column, vga_row+1);
 
 	int* ptr = kmalloc(sizeof(int));
-    *ptr = 1488;
-    kprintf("%d\n", *ptr);
+    int* ptr1 = kmalloc(sizeof(int));
+    ptr[1] = 1488;
+    ptr1[1] = 8080;
+    kprintf("%d\n", ptr[1]);
+    kprintf("%d\n", ptr1[1]);
 
 	hang();
 }

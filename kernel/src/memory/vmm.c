@@ -1,12 +1,14 @@
 #include "../../include/memory.h"
 #include "../../include/stdlib.h"
 
-extern void set_page_dir(unsigned int*);
+extern void set_page_dir(uint32_t*);
 //extern void tlb_flush(intptr_t);
 //VMM_block* vmm_blocks;
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 uint32_t page_table[1024] __attribute__((aligned(4096)));
+
+VMM_block pt_map[0x20000]; // (HEAP_END - HEAP_BASE) / 4096
 
 void vmm_init() {
     for (int i = 0; i < 1024; i++) page_directory[i] = 0x00000002;
@@ -26,34 +28,54 @@ void vmm_init() {
 
 // TODO: use size and figure out what the hell i should do with it / handle present pt
 intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
-    intptr_t paddr = pmm_alloc_block();
-    if (paddr == ERRCODE) return ERRCODE;
+    uint16_t pt_count = (size + 0x1000 - 1) / 0x1000; // ceil dev TODO: (add to stdlib)
+    intptr_t start_vaddr = NULL;
+    uint16_t pt_index = 0;
 
-    intptr_t vaddr = paddr + 0xC0000000;
-
-    uint32_t pdindex = (uint32_t)vaddr >> 22;
-    uint32_t ptindex = ((uint32_t)vaddr >> 12) & 0x03FF;
-
-    uint32_t* pd = (uint32_t*)0xFFFFF000;
-
-    if (!(pd[pdindex] & 0x01)) {
-        intptr_t new_pt_phys = pmm_alloc_block();
-        if (new_pt_phys == ERRCODE) return ERRCODE;
-
-        pd[pdindex] = ((uint32_t)new_pt_phys) | 0x03;
-
-        uint32_t* new_pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
-        tlb_flush(new_pt);
-        memset(new_pt, 0, 1024);
+    // looking for free pt space
+    for (int i = 0; i < 0x20000; i++) {
+        bool free = false;
+        for (int j = 0; j < pt_count; j++) {
+            if (pt_map[j+i].used == true) break;
+            if (pt_map[j+i].used == false && j + 1 == pt_count) free = true;
+        }
+        if (free) {
+            pt_index = i;
+            break;
+        }
     }
 
-    uint32_t* pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
-    pt[ptindex] = ((uint32_t)paddr) | (flags & 0xFFF) | 0x01;
+    for (int i = 0; i < pt_count; i++) {
+        intptr_t paddr = pmm_alloc_block();
+        if (paddr == ERRCODE) return ERRCODE;
 
-    tlb_flush(vaddr);
+        intptr_t vaddr = pt_index * 0x1000 + HEAP_BASE;
 
-    return vaddr;
+        uint32_t pdindex = (uint32_t)vaddr >> 22;
+        uint32_t ptindex = ((uint32_t)vaddr >> 12) & 0x03FF;
+
+        uint32_t* pd = (uint32_t*)0xFFFFF000;
+        if (!(pd[pdindex] & 0x01)) {
+            intptr_t new_pt_phys = pmm_alloc_block();
+            if (new_pt_phys == ERRCODE) return ERRCODE;
+
+            pd[pdindex] = ((uint32_t)new_pt_phys) | 0x03;
+
+            uint32_t* new_pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
+            tlb_flush(new_pt);
+            memset(new_pt, 0, 1024);
+        }
+
+        uint32_t* pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
+        pt[ptindex] = ((uint32_t)paddr) | (flags & 0xFFF) | 0x01;
+
+        tlb_flush(vaddr);
+        pt_map[pt_index + i].used = true;
+        if (i == 0) 
+            start_vaddr = vaddr;
+    }
+
+    return start_vaddr;
 }
-
 
 
