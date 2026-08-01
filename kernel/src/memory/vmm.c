@@ -79,3 +79,14 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
 }
 
 
+void heap_init() {
+    intptr_t vaddr = vmm_alloc_block(0x1000, 0x7);
+
+    heap_blocks = (HEAP_block*)vaddr;
+    heap_blocks[0].vaddr = vaddr + sizeof(HEAP_block);
+    heap_blocks[0].size = 0x1000;
+    heap_blocks[0].free = true;
+    heap_blocks[0].next = NULL;
+}
+
+

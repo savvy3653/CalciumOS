@@ -22,6 +22,7 @@ void kernel_main(void) {
 	idt_init();
     pmm_init();
 	vmm_init();
+    heap_init();
 	vga_init();
 	
 	// interrupt handlers
@@ -32,8 +33,8 @@ void kernel_main(void) {
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-	int* ptr = kmalloc(sizeof(int));
-    int* ptr1 = kmalloc(sizeof(int));
+	int* ptr = kmalloc(95);
+    int* ptr1 = kmalloc(3000);
     ptr[1] = 1488;
     ptr1[1] = 8080;
     kprintf("%d\n", ptr[1]);

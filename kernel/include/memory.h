@@ -34,6 +34,14 @@ typedef struct {
 } VMM_block;
 
 
+typedef struct HEAP_block {
+    intptr_t vaddr;
+    size_t size;
+    bool free;
+    struct HEAP_block* next;
+} HEAP_block;
+extern HEAP_block* heap_blocks;
+
 // Physical memory manager
 void pmm_init();    // 
 intptr_t pmm_alloc_block(); // returns phys address
@@ -49,7 +57,7 @@ void vmm_free_block(intptr_t vaddr);
 static inline void tlb_flush(intptr_t addr) {
     asm volatile("invlpg (%0)" :: "r"(addr) : "memory");
 }
-
+void heap_init();
 
 void* kmalloc(size_t size);
 void kfree(void* ptr);
