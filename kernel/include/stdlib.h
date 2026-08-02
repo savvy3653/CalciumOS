@@ -18,9 +18,10 @@ size_t strlen(const char* str);
 void* memset(void* dest, int num, size_t N);
 void* memcpy(void* dest, const void* src, size_t N);
 void* memmove(void* dest, const void* src, size_t N);
-int printf(const char* restrict format, ...);
 int memcmp(const void* ptr1, const void* ptr2, size_t N);
-
+static inline uint32_t ceil(const uint32_t a, const uint32_t b) {
+    return (a + b - 1) / b;
+}
 
 // custom
 
@@ -49,3 +50,6 @@ static inline uint8_t inb(uint16_t port) {
 static inline void io_wait(void) {
     outb(0x80, 0);
 }
+
+
+

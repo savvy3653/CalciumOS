@@ -3,7 +3,7 @@
 
 // [heap_block0] ->| memory | [heap_block1] ->| memory | ...
 
-HEAP_block* heap_blocks = (HEAP_block*)HEAP_BASE;
+HEAP_block* heap_blocks = (HEAP_block*)VMM_HEAP_BASE;
 //HEAP_block* heap_blocks_end = heap_blocks; // init
 
 void* kmalloc(size_t size) {
@@ -51,6 +51,8 @@ void* kmalloc(size_t size) {
             it1 = it1->next;
         }
         it1->next = block;
+
+        vaddr = block[0].vaddr;
         it = block;
     }
     if (vaddr == ERRCODE) return NULL;

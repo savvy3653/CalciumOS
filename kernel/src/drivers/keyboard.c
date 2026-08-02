@@ -1,8 +1,11 @@
 #include "../../include/keyboard.h"
 #include "../../include/stdlib.h"
+#include "../../include/stdio.h"
 #include "../../include/idt.h"
 #include "../../include/pic.h"
 #include "../../include/vga.h"
+
+//#define KEYBOARD_EXT
 
 const uint32_t UNKNOWN = 0xFFFFFFFF;
 const uint32_t ESC = 0xFFFFFFFF - 1;

@@ -6,7 +6,7 @@ PMM_block pmm_blocks[0x20000]; // (HEAP_END - HEAP_BASE) / 4096
 
 void pmm_init() {
     for (int i = 0; i < 0x20000; i++) {
-        pmm_blocks[i].paddr = HEAP_BASE + i * 0x1000;
+        pmm_blocks[i].paddr = PMM_HEAP_BASE + i * 0x1000;
         pmm_blocks[i].flags = FREE;
         pmm_blocks[i].ref_count = 0;
     } 

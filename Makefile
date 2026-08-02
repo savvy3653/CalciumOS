@@ -23,6 +23,7 @@ kernel.o:
 	i686-elf-gcc -c $(LIBKERNEL)/memcmp.c -o memcmp.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/printf.c -o printf.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/kmalloc.c -o kmalloc.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/kfree.c -o kfree.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
@@ -37,7 +38,7 @@ kernel.o:
 	nasm -f elf32 -g kernel/src/memory/paging.asm -o paging.o
 
 myos:
-	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o kmalloc.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o vmm.o pmm.o paging.o -lgcc
+	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o kmalloc.o kfree.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o vmm.o pmm.o paging.o -lgcc
 
 clean:
 	rm myos myos.iso *.o
@@ -49,6 +50,6 @@ init:
 	export TARGET=i686-elf
 	export PATH="$PREFIX/bin:$PATH"
 start:
-	qemu-system-i386 -m 1024M -cdrom myos.iso
+	qemu-system-i386 -m 2048M -cdrom myos.iso
 startdbg:
-	qemu-system-i386 -m 1024M -cdrom myos.iso -s -S
+	qemu-system-i386 -m 2048M -cdrom myos.iso -s -S

@@ -26,9 +26,9 @@ void vmm_init() {
     set_page_dir((unsigned int*)((uint32_t)page_directory - 0xC0000000));
 }
 
-// TODO: use size and figure out what the hell i should do with it / handle present pt
+// TODO: handle present pt
 intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
-    uint16_t pt_count = (size + 0x1000 - 1) / 0x1000; // ceil dev TODO: (add to stdlib)
+    uint16_t pt_count = (uint16_t)ceil(size, 0x1000);
     intptr_t start_vaddr = NULL;
     uint16_t pt_index = 0;
 
@@ -49,7 +49,7 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
         intptr_t paddr = pmm_alloc_block();
         if (paddr == ERRCODE) return ERRCODE;
 
-        intptr_t vaddr = pt_index * 0x1000 + HEAP_BASE;
+        intptr_t vaddr = (pt_index + i) * 0x1000 + VMM_HEAP_BASE;
 
         uint32_t pdindex = (uint32_t)vaddr >> 22;
         uint32_t ptindex = ((uint32_t)vaddr >> 12) & 0x03FF;
@@ -74,7 +74,6 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags) {
         if (i == 0) 
             start_vaddr = vaddr;
     }
-
     return start_vaddr;
 }
 

@@ -24,7 +24,7 @@ void kernel_main(void) {
 	vmm_init();
     heap_init();
 	vga_init();
-	
+
 	// interrupt handlers
 	keyboard_init();
 
@@ -33,12 +33,16 @@ void kernel_main(void) {
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-	int* ptr = kmalloc(95);
-    int* ptr1 = kmalloc(3000);
-    ptr[1] = 1488;
-    ptr1[1] = 8080;
-    kprintf("%d\n", ptr[1]);
-    kprintf("%d\n", ptr1[1]);
+	unsigned char* ptr = kmalloc(5000);
+    ptr[4000] = 255;
+    char* ptr1 = kmalloc(10000);
+    ptr1[9999] = 4; 
+    kprintf("%d\n", ptr[4000]);
+    kprintf("%d\n", ptr1[9999]);
+    kfree(ptr);
+    kfree(ptr1);
+    kprintf("%d\n", ptr[4000]);
+    kprintf("%d\n", ptr1[9999]);
 
 	hang();
 }
