@@ -38,7 +38,7 @@ kernel.o:
 	nasm -f elf32 -g kernel/src/memory/paging.asm -o paging.o
 
 myos:
-	$(LD) myos $(LFLAGS) boot.o kernel.o vga.o strlen.o memset.o memmove.o memcpy.o memcmp.o kmalloc.o kfree.o gdt.o gdtasm.o idt.o idtasm.o send_eoi.o keyboard.o text_cursor.o printf.o vmm.o pmm.o paging.o -lgcc
+	$(LD) myos $(LFLAGS) *.o -lgcc
 
 clean:
 	rm myos myos.iso *.o
