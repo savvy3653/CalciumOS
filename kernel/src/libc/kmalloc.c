@@ -51,6 +51,7 @@ void* kmalloc(size_t size) {
             it1 = it1->next;
         }
         it1->next = block;
+        it = block;
     }
     if (vaddr == ERRCODE) return NULL;
 
