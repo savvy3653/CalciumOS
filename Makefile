@@ -1,5 +1,6 @@
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -g -O0
 LFLAGS = -ffreestanding -O2 -nostdlib
+ZIGFLAGS = -target x86-freestanding-none -mcpu=i386 -O ReleaseSmall
 
 LD = i686-elf-gcc -T linker.ld -o
 
@@ -23,7 +24,8 @@ kernel.o:
 	i686-elf-gcc -c $(LIBKERNEL)/memcmp.c -o memcmp.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/printf.c -o printf.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/kmalloc.c -o kmalloc.o $(CFLAGS)
-	i686-elf-gcc -c $(LIBKERNEL)/kfree.c -o kfree.o $(CFLAGS)
+	#i686-elf-gcc -c $(LIBKERNEL)/kfree.c -o kfree.o $(CFLAGS)
+	zig build-obj $(LIBKERNEL)/kfree.zig $(ZIGFLAGS) -femit-bin=kfree.o
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)

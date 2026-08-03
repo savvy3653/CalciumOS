@@ -33,16 +33,11 @@ void kernel_main(void) {
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-	unsigned char* ptr = kmalloc(5000);
-    ptr[4000] = 255;
-    char* ptr1 = kmalloc(10000);
-    ptr1[9999] = 4; 
-    kprintf("%d\n", ptr[4000]);
-    kprintf("%d\n", ptr1[9999]);
+	unsigned char* ptr = kmalloc(4);
+    kprintf("%d\n", ptr);
     kfree(ptr);
+    unsigned char* ptr1 = kmalloc(4);
+    kprintf("%d\n", ptr1);
     kfree(ptr1);
-    kprintf("%d\n", ptr[4000]);
-    kprintf("%d\n", ptr1[9999]);
-
 	hang();
 }
