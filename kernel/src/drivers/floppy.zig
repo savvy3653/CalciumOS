@@ -92,7 +92,7 @@ pub export fn floppy_read_sector(lba: u32, buffer: [*]u8) void {
     @memcpy(buffer, &floppy_dmabuf);
 }
 
-pub export floppy_write_sector(lba: u32, buffer: [*]u8) void {
+pub export fn floppy_write_sector(lba: u32, buffer: [*]u8) void {
     const chs = lba_2_chs(lba);
     
     motor_on();
