@@ -27,26 +27,9 @@ static inline uint32_t ceil(const uint32_t a, const uint32_t b) {
 
 #define ERRCODE -1
 
-static inline void kpanic() {
-    asm volatile ("cli": : :"memory");
-    while (true) {
-        asm volatile ("hlt");
-    }
-}
-
-static inline void outb(uint16_t port, uint8_t val) {
-    asm volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
-}
-
-static inline uint8_t inb(uint16_t port) {
-    uint8_t ret;
-    asm volatile ( "inb %w1, %b0"
-                   : "=a"(ret)
-                   : "Nd"(port)
-                   : "memory");
-    return ret;
-}
-
+void kpanic(void);
+void outb(uint16_t port, uint8_t val);
+uint8_t inb(uint16_t port);
 static inline void io_wait(void) {
     outb(0x80, 0);
 }

@@ -1,13 +1,12 @@
 
 const HEAP_block = extern struct {
-    vaddr: usize,
-    size: usize,
+    vaddr: u32,
+    size: u32,
     free: bool,
     next: ?*HEAP_block,
 };
-
 extern var heap_blocks: [*]HEAP_block;
-extern fn memset(ptr: *anyopaque, value: c_int, num: usize) callconv(.c) *anyopaque;
+extern fn memset(ptr: *anyopaque, value: i32, num: u32) callconv(.c) *anyopaque;
 
 export fn kfree(ptr: ?*anyopaque ) void {
     if (ptr == null) return;

@@ -1,6 +1,7 @@
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -g -O0
 LFLAGS = -ffreestanding -O2 -nostdlib
 ZIGFLAGS = -target x86-freestanding-none -mcpu=i386 -O ReleaseSmall
+ZIGFLAGS_DEBUG = -target x86-freestanding-none -mcpu=i386 -O Debug
 
 LD = i686-elf-gcc -T linker.ld -o
 
@@ -24,8 +25,14 @@ kernel.o:
 	i686-elf-gcc -c $(LIBKERNEL)/memcmp.c -o memcmp.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/printf.c -o printf.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/kmalloc.c -o kmalloc.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/kpanic.c -o kpanic.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/iob.c -o iob.o $(CFLAGS)
 	#i686-elf-gcc -c $(LIBKERNEL)/kfree.c -o kfree.o $(CFLAGS)
-	zig build-obj $(LIBKERNEL)/kfree.zig $(ZIGFLAGS) -femit-bin=kfree.o
+	zig build-obj $(LIBKERNEL)/kfree.zig $(ZIGFLAGS_DEBUG) -femit-bin=kfree.o
+	zig build-obj $(CKERNEL)/fs/fs.zig $(ZIGFLAGS_DEBUG) -femit-bin=fs.o
+	zig build-obj $(CKERNEL)/fs/ext2.zig $(ZIGFLAGS_DEBUG) -femit-bin=ext2.o
+	zig build-obj $(CKERNEL)/timer/timer.zig $(ZIGFLAGS_DEBUG) -femit-bin=timer.o
+	zig build-obj $(CKERNEL)/drivers/floppy.zig $(ZIGFLAGS_DEBUG) -femit-bin=floppy.o
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
@@ -52,6 +59,6 @@ init:
 	export TARGET=i686-elf
 	export PATH="$PREFIX/bin:$PATH"
 start:
-	qemu-system-i386 -m 2048M -cdrom myos.iso
+	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso
 startdbg:
-	qemu-system-i386 -m 2048M -cdrom myos.iso -s -S
+	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -s -S
