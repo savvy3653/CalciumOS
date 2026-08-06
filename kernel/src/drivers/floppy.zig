@@ -92,6 +92,42 @@ pub export fn floppy_read_sector(lba: u32, buffer: [*]u8) void {
     @memcpy(buffer, &floppy_dmabuf);
 }
 
+pub export floppy_write_sector(lba: u32, buffer: [*]u8) void {
+    const chs = lba_2_chs(lba);
+    
+    motor_on();
+    dma_init(.write);
+
+    @memcpy(&floppy_dmabuf, buffer[0..512]);
+
+    write_byte(0x80 | 0x40 | 0x5);
+    write_byte(chs.head << 2 | 0);
+    write_byte(chs.cyl);
+    write_byte(chs.head);
+    write_byte(chs.sector);
+    write_byte(2);
+    write_byte(chs.sector+1);
+    write_byte(0x1B);
+    write_byte(0xFF);
+
+    while (!received_irq) {}
+    received_irq = false;
+
+    const st0 = read_byte();
+    const st1 = read_byte();
+    const st2 = read_byte();
+    _ = read_byte();
+    _ = read_byte();
+    _ = read_byte();
+    _ = read_byte();
+
+    _ = st0;
+    _ = st1;
+    _ = st2;
+
+    motor_off();
+}
+
 export fn floppy_detect_drives() void {
     outb(0x70, 0x10);
     ksleep(300);
@@ -192,7 +228,7 @@ pub fn dma_init(dir: FloppyDir) void {
     // check that count is at most 16-bits (DMA limit)
     // check that if we add count and address we don't get a carry
     // (DMA can't deal with such a carry, this is the 64k boundary limit)
-    if ((a.l >> 24) != 0 or (c.l >> 16) != 0 or (((a.l & 0xffff) + c.l) >> 16) != 0) {
+    if ((a.l >> 24) != 0 or (c.l >> 16) != 0 or (((a.l & 0xFFFF) + c.l) >> 16) != 0) {
         kpanic();
     }
 
