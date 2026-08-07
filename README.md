@@ -1,7 +1,7 @@
 # SheetOS
 This is a hobby OS based on *monolithic kernel* concept and *x86 architecture*.
 SheetOS is written in NASM, C and Zig languages.
-Now this system actually can do *nothing*. Although you can type text.
+Now this system actually can do *nothing*. *Although you can type text*.
 
 <img width="706" height="399" alt="image" src="https://github.com/user-attachments/assets/f06d1f3f-08bb-4f8a-b7d7-f0614690c289" />
 
