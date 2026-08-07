@@ -31,11 +31,18 @@ Dependencies:
 - 'qemu-system-i386'
 
 ### Ubuntu/Debian/(WSL)
-\`\`\`bash
+```bash
 sudo apt install nasm make xorriso grub-pc-bin qemu-system-x86
-\`\`\`
-
+```
 Cross-compiler `i686-elf-gcc` and `zig` are setup separately — links above + https://ziglang.org/download/.
+
+### Versions
+`GCC` (15.2.0)
+`Zig` (0.16.0)
+
+### How to actually start it
+Use `make` command in terminal (in main OS directory) and then if it succeed use `make start`.
 
 ## Notes
 GUI won't be provided. This is some kind of a UNIX-like system.
+For debug you can use `make startdbg` command.
