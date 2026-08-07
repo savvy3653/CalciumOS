@@ -213,6 +213,7 @@ fn wait_msr_ready(dio: u8) void {
         if ((msr & 0xC0) == (0x80 | dio)) {
             return;
         }
+        ksleep(1);
     }
     //return error.FDCtimeout;
     kpanic();

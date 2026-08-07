@@ -1,6 +1,7 @@
+
 // All basic fs structures declared HERE
 
-const Superblock = struct {
+pub const Superblock = packed struct {
     inodes: u32,
     blocks: u32,
     reserved: u32,
