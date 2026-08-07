@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 savvy3653 
+
 #include "include/vga.h"
 #include "include/memory.h"
 #include "include/stdlib.h"
@@ -14,6 +17,7 @@ extern void floppy_init(void);
 extern void floppy_detect_drives(void);
 extern void floppy_read_sector(uint32_t lba, uint8_t* buf);
 extern void parse_superblock(void);
+
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
 // #error "You are not using a cross-compiler, you will most certainly run into trouble"
