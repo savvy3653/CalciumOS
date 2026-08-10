@@ -20,6 +20,7 @@ Drivers:
 
 Filesystem:
 - ext2 (*in progress*)
+- fat12 (*in progress*)
 
 ## Getting Started
 Dependencies:
