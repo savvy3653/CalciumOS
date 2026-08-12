@@ -7,9 +7,11 @@
 #define USED 1
 #define RESERVED 2
 
+// METADATA sector contains HEAP_block structures to
+// manipulate real heap from VMM_HEAP_BASE
 #define PMM_HEAP_BASE   0x10000000  
 #define VMM_HEAP_BASE   0xD0000000
-#define METADATA_HEAP_BASE  0xE0000000 // TODO: for heap_blocks (separate place)
+#define METADATA_HEAP_BASE  0xE0000000
 
 extern uintptr_t __kernel_physical_start; 
 extern uintptr_t __kernel_virtual_start;
@@ -27,10 +29,7 @@ typedef struct {
 
 
 typedef struct {
-    //uintptr_t vstart;
-    //uintptr_t pstart;
     uint32_t size;
-    //uint32_t flags;
     bool used;
 } VMM_block;
 
@@ -52,7 +51,7 @@ void pmm_free_block(int16_t index);
 
 // Virtual memory manager
 void vmm_init();
-intptr_t vmm_alloc_block(size_t size, uint32_t flags); // returns virt address
+intptr_t vmm_alloc_block(size_t size, uint32_t flags, uint32_t custom_vaddr); // returns virt address
 int16_t vmm_find_free_block(); // returns index in page table
 void vmm_free_block(intptr_t vaddr);
 static inline void tlb_flush(intptr_t addr) {

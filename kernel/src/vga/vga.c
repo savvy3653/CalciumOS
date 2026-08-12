@@ -66,7 +66,14 @@ int vga_putchar(char c) {
 			break;
 
 		case '\b':
-			if ((vga_column > 1) && (vga_row > 2)) {
+            char symbol = vga_buffer[vga_row * VGA_WIDTH + (vga_column - 1)] & 0xFF; 
+			if ((symbol != '>') && (vga_row > 2)) {
+                if (vga_column == 0) {
+                    vga_row--;
+                    vga_column = VGA_WIDTH - 1;
+                    vga_putentryat(' ', vga_color, vga_column, vga_row);
+                    return 1;
+                }
 				vga_putentryat(' ', vga_color, --vga_column, vga_row);
 			}
 			return 1;

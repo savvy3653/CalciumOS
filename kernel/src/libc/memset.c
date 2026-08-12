@@ -6,5 +6,5 @@ void* memset(void* dest, int num, size_t N) {
         *p = (unsigned char)num;
         p++;
     }
-    return p;
+    return dest;
 }

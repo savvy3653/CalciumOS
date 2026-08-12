@@ -1,6 +1,6 @@
 #include "../../include/stdlib.h"
 
-int memcmp(const void* ptr1, const void* ptr2, size_t N) {
+int32_t memcmp(const void* ptr1, const void* ptr2, size_t N) {
 	const unsigned char* a = (const unsigned char*) ptr1;
 	const unsigned char* b = (const unsigned char*) ptr2;
 	for (size_t i = 0; i < N; i++) {

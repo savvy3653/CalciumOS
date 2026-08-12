@@ -16,7 +16,9 @@ extern void ksleep(uint32_t ms);
 extern void floppy_init(void);
 extern void floppy_detect_drives(void);
 extern void floppy_read_sector(uint32_t lba, uint8_t* buf);
-extern void parse_superblock(void);
+extern void ext2_init(void);
+extern void fat12_init(void);
+extern void read_file(const char*);
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
@@ -41,14 +43,16 @@ void kernel_main(void) {
 	keyboard_init();
     floppy_detect_drives();
     floppy_init();
+    fat12_init();
+    ksleep(1000);
 
     cls();
-	kprintf(" SheetOS System Release 0.1 (gcc-15.2.0)\n");
+	kprintf(" SheetOS System Release 0.2 (gcc-15.2.0)\n");
 	kprintf(" Copyright (C) 2026 savvy3653\n");
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-    parse_superblock();
+    read_file("README  ");
 
 	hang();
 }

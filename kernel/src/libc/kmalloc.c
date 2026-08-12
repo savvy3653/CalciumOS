@@ -3,12 +3,13 @@
 
 // [heap_block0] ->| memory | [heap_block1] ->| memory | ...
 
-HEAP_block* heap_blocks = (HEAP_block*)VMM_HEAP_BASE;
+HEAP_block* heap_blocks = (HEAP_block*)METADATA_HEAP_BASE;
 //HEAP_block* heap_blocks_end = heap_blocks; // init
 
 void* kmalloc(size_t size) {
     HEAP_block* it;
     intptr_t vaddr = NULL;
+    intptr_t last_node_vaddr = NULL;
 
     it = &heap_blocks[0];
     while (it) {
@@ -21,26 +22,29 @@ void* kmalloc(size_t size) {
             HEAP_block* prev_next = it->next;
             // init this node
             it->size = size;
-            it->next = (HEAP_block*)((intptr_t*)(it->vaddr + it->size));
+            it->next = (HEAP_block*)((intptr_t*)(it + sizeof(HEAP_block)));
             // init next node
-            it->next->vaddr = it->vaddr + it->size + sizeof(HEAP_block); 
-            it->next->size = prev_size - size - sizeof(HEAP_block);
+            it->next->vaddr = it->vaddr + it->size; 
+            it->next->size = prev_size - size;
             it->next->free = true;
             it->next->next = prev_next;
 
             vaddr = it->vaddr;
             break;
         }
+        last_node_vaddr = it;
         it = it->next;
     }
     // if no address fit, allocate new vm_block
     if (vaddr == NULL) { 
+        intptr_t new_block_vaddr = last_node_vaddr + sizeof(HEAP_block);
         // 7 - PRESENT/RW/USER bits set
-        vaddr = vmm_alloc_block(size, 0x7);
+        intptr_t block_vaddr = vmm_alloc_block(0x1000, 0x7, new_block_vaddr);
+        vaddr = vmm_alloc_block(size, 0x7, NULL);
 
         // create new heap_block
-        HEAP_block* block = (HEAP_block*)vaddr;
-        block[0].vaddr = vaddr + sizeof(HEAP_block);
+        HEAP_block* block = (HEAP_block*)block_vaddr;
+        block[0].vaddr = vaddr;
         block[0].size = size;
         block[0].free = true;
         block[0].next = NULL;

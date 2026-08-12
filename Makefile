@@ -27,10 +27,12 @@ kernel.o:
 	i686-elf-gcc -c $(LIBKERNEL)/kmalloc.c -o kmalloc.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/kpanic.c -o kpanic.o $(CFLAGS)
 	i686-elf-gcc -c $(LIBKERNEL)/iob.c -o iob.o $(CFLAGS)
+	i686-elf-gcc -c $(LIBKERNEL)/math.c -o math.o $(CFLAGS)
 	#i686-elf-gcc -c $(LIBKERNEL)/kfree.c -o kfree.o $(CFLAGS)
 	zig build-obj $(LIBKERNEL)/kfree.zig $(ZIGFLAGS_DEBUG) -femit-bin=kfree.o
 	zig build-obj $(CKERNEL)/fs/fs.zig $(ZIGFLAGS_DEBUG) -femit-bin=fs.o
 	zig build-obj $(CKERNEL)/fs/ext2.zig $(ZIGFLAGS_DEBUG) -femit-bin=ext2.o
+	zig build-obj $(CKERNEL)/fs/fat12.zig $(ZIGFLAGS_DEBUG) -femit-bin=fat12.o
 	zig build-obj $(CKERNEL)/timer/timer.zig $(ZIGFLAGS_DEBUG) -femit-bin=timer.o
 	zig build-obj $(CKERNEL)/drivers/floppy.zig $(ZIGFLAGS_DEBUG) -femit-bin=floppy.o
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
@@ -59,6 +61,6 @@ init:
 	export TARGET=i686-elf
 	export PATH="$PREFIX/bin:$PATH"
 start:
-	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso
+	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -boot d
 startdbg:
-	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -s -S
+	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -boot d -s -S
