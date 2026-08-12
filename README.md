@@ -46,5 +46,6 @@ Cross-compiler `i686-elf-gcc` and `zig` are setup separately — links above + h
 Use `make` command in terminal (in main OS directory) and then if it succeed use `make start`.
 
 ## Notes
-GUI won't be provided. This is some kind of a UNIX-like system.
-For debug you can use `make startdbg` command.
+- GUI won't be provided. This is some kind of a UNIX-like system.
+- For debug you can use `make startdbg` command.
+- For GNU products used info see: `THIRD_PARTY_LICENSES.md`
