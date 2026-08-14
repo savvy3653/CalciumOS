@@ -141,9 +141,9 @@ void encode_idt_entry(IDT_entry_table* entry, uint32_t offset,
 void isr_handler(INT_registers* regs) {
     if (regs->int_no < 32) {
         rs_init();
-        kprintf(exception_messages[regs->int_no]);
-        kprintf("\n");
-        kprintf("Exception! System halted!\n");
+        kprint(exception_messages[regs->int_no]);
+        kprint("\n");
+        kprint("Exception! System halted!\n");
         switch (regs->int_no) {
 		case 0:
 

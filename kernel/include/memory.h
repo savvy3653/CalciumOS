@@ -11,7 +11,7 @@
 // manipulate real heap from VMM_HEAP_BASE
 #define PMM_HEAP_BASE   0x10000000  
 #define VMM_HEAP_BASE   0xD0000000
-#define METADATA_HEAP_BASE  0xE0000000
+#define METADATA_HEAP_BASE  0xE8000000
 
 extern uintptr_t __kernel_physical_start; 
 extern uintptr_t __kernel_virtual_start;

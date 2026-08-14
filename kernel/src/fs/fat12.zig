@@ -1,4 +1,5 @@
 
+const std = @import("std");
 const fs = @import("fs.zig");
 
 const FileError = error{
@@ -37,16 +38,16 @@ pub export fn fat12_init() void {
 
     const cnt_of_clusters: u32 = data_sectors / bpb.sectors_per_cluster;
     if (cnt_of_clusters <= 4085) {
-        kprintf("FAT12 detected.\n");
+        
     } // TODO: checkup for other fats later
     else {
-        kprintf("No filesystem detected!\n");
+        kprintf("Unknown FAT!\n");
     }
 }
 
-pub export fn read_file(fname: [*]u8) void {
+pub export fn fat12_read_file(fname: [*:0]u8) void {
     var de: fs.FAT12_Directory_Entry = undefined;
-    if (read_directory(fname)) |value| {
+    if (fat12_read_directory(fname)) |value| {
         de = value;
     } else |err| {
         switch(err) {
@@ -56,10 +57,6 @@ pub export fn read_file(fname: [*]u8) void {
             }
         }
     }
-    //if (de == null) {
-    //    kprintf("File error occured!\n");
-    //    return;
-    //}
 
     // parsing clusters
     // TODO: get de.file_size and add support for a few sectors in file?
@@ -106,21 +103,53 @@ pub export fn read_file(fname: [*]u8) void {
 
 
 // goal: find directory entry for specified file
-fn read_directory(fname: [*]u8) !fs.FAT12_Directory_Entry {
+fn fat12_read_directory(fname: [*:0]u8) !fs.FAT12_Directory_Entry {
+    const file_struct = parse_c_filename(fname);
     var buffer: [sector_size]u8 align(@alignOf(fs.FAT12_Directory_Entry)) = undefined;
     
-    var dir_entry: u32 = rood_dir_start_sector;
-    while (dir_entry < data_start_sector) : (dir_entry += @sizeOf(fs.FAT12_Directory_Entry)) {
-        floppy_read_sector(dir_entry, &buffer);
-        const tmp: *fs.FAT12_Directory_Entry = @ptrCast(@alignCast(&buffer));
-        const de: fs.FAT12_Directory_Entry = tmp.*;
+    var dir_sector: u32 = rood_dir_start_sector;
+    while (dir_sector < data_start_sector) : (dir_sector += 1) {
+        floppy_read_sector(dir_sector, &buffer);
 
-        if (de.file_name & 0xFF == 0) break; // no more files/dirs in this dir
-        if (de.file_name & 0xFF == 0xE5) continue; // unused entry
-        if (memcmp(@ptrCast(&de.file_name), fname, 8) == 0)  return de;
+        var offset: u32 = 0;
+        while (offset < sector_size) : (offset += @sizeOf(fs.FAT12_Directory_Entry)) {
+            const tmp: *fs.FAT12_Directory_Entry = @ptrCast(@alignCast(&buffer[offset]));
+            const de: fs.FAT12_Directory_Entry = tmp.*;
+
+            const filename1 = std.mem.trim(u8, &de.file_name, " ");
+            const filext1 = std.mem.trim(u8, &de.file_ext, " ");
+            if (de.file_name[0] == 0) return FileError.FileNotFound; // no more files/dirs in this dir
+            if (de.file_name[0] == 0xE5) continue; // unused entry
+            if (std.mem.eql(u8, filename1, file_struct.filename) == true and std.mem.eql(u8, filext1, file_struct.filext) == true)  return de;
+        }
     }
 
     return FileError.FileNotFound;
+}
+
+const FileName = struct {
+    filename: []const u8,
+    filext: []const u8,
+};
+
+fn parse_c_filename(fname: [*:0]u8) FileName {
+    var target = std.mem.span(fname);
+    var ext: []const u8 = "";
+    var name: []const u8 = target;
+    var i: u32 = 0;
+    while (i < target.len) : (i += 1) {
+        if (std.mem.eql(u8, target[i..i+1], ".")) {
+            ext = target[i+1..];
+            name = target[0..i];      
+        }
+    }
+
+    const trimmed_ext = std.mem.trim(u8, ext, " ");
+    const trimmed_name = std.mem.trim(u8, name, " ");
+    return .{
+        .filename = trimmed_name,
+        .filext = trimmed_ext,
+    };
 }
 
 

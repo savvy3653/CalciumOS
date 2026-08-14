@@ -33,6 +33,7 @@ kernel.o:
 	zig build-obj $(CKERNEL)/fs/fs.zig $(ZIGFLAGS_DEBUG) -femit-bin=fs.o
 	zig build-obj $(CKERNEL)/fs/ext2.zig $(ZIGFLAGS_DEBUG) -femit-bin=ext2.o
 	zig build-obj $(CKERNEL)/fs/fat12.zig $(ZIGFLAGS_DEBUG) -femit-bin=fat12.o
+	zig build-obj $(CKERNEL)/fs/fs_init.zig $(ZIGFLAGS_DEBUG) -femit-bin=fs_init.o
 	zig build-obj $(CKERNEL)/timer/timer.zig $(ZIGFLAGS_DEBUG) -femit-bin=timer.o
 	zig build-obj $(CKERNEL)/drivers/floppy.zig $(ZIGFLAGS_DEBUG) -femit-bin=floppy.o
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)

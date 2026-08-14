@@ -43,6 +43,7 @@ extern fn kpanic() callconv(.c) void;
 // irq install
 export fn floppy_init() void {
     irq_install_routine(int_floppy, floppy_handler);
+    floppy_detect_drives();
     reset_floppy();
     specify();
     recalibrate();
@@ -128,7 +129,7 @@ pub export fn floppy_write_sector(lba: u32, buffer: [*]u8) void {
     motor_off();
 }
 
-export fn floppy_detect_drives() void {
+fn floppy_detect_drives() void {
     outb(0x70, 0x10);
     ksleep(300);
     const drives: u8 = inb(0x71);

@@ -23,14 +23,14 @@ void vmm_init() {
     // recursive mapping
     page_directory[1023] = ((uint32_t)page_directory - 0xC0000000) | 3;
 
-    set_page_dir((unsigned int*)((uint32_t)page_directory - 0xC0000000));
+    set_page_dir((uint32_t*)((uint32_t)page_directory - 0xC0000000));
 }
 
 // TODO: handle present pt
 // BE CAREFUL WITH CUSTOM_VADDR!
 intptr_t vmm_alloc_block(size_t size, uint32_t flags, uint32_t custom_vaddr) {
     uint16_t pt_count = (uint16_t)ceil(size, 0x1000);
-    intptr_t start_vaddr = NULL;
+    intptr_t start_vaddr = 0;
     uint16_t pt_index = 0;
 
     // looking for free pt space
@@ -51,7 +51,7 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags, uint32_t custom_vaddr) {
         if (paddr == ERRCODE) return ERRCODE;
 
         intptr_t vaddr;
-        if (custom_vaddr == NULL) {
+        if (custom_vaddr == 0) {
             vaddr = (pt_index + i) * 0x1000 + VMM_HEAP_BASE;
         } else {
             vaddr = custom_vaddr;
@@ -68,7 +68,7 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags, uint32_t custom_vaddr) {
             pd[pdindex] = ((uint32_t)new_pt_phys) | 0x03;
 
             uint32_t* new_pt = (uint32_t*)(0xFFC00000 + (pdindex * 0x1000));
-            tlb_flush(new_pt);
+            tlb_flush((intptr_t)new_pt);
             memset(new_pt, 0, 4096);
         }
 
@@ -87,7 +87,7 @@ intptr_t vmm_alloc_block(size_t size, uint32_t flags, uint32_t custom_vaddr) {
 void heap_init() {
     const uint32_t metadata_base = 
         vmm_alloc_block(0x1000, 0x7, METADATA_HEAP_BASE); // not necessarily need to be a variable, you can just call it. (made for debug)
-    intptr_t vaddr = vmm_alloc_block(0x1000, 0x7, NULL);
+    intptr_t vaddr = vmm_alloc_block(0x1000, 0x7, 0);
 
     heap_blocks = (HEAP_block*)metadata_base;
     heap_blocks[0].vaddr = vaddr;

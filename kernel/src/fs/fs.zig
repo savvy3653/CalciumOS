@@ -135,8 +135,9 @@ pub const BPB = packed struct {
     signature1: u16,
 };
 
-pub const FAT12_Directory_Entry = packed struct {
-    file_name: u88,
+pub const FAT12_Directory_Entry = extern struct {
+    file_name: [8]u8,
+    file_ext: [3]u8,
     file_flags: u8,
     reserved: u8,
     creation_time0: u8,
@@ -149,3 +150,5 @@ pub const FAT12_Directory_Entry = packed struct {
     first_cluster: u16,
     file_size: u32,
 };
+
+
