@@ -11,6 +11,7 @@ enum vga_color vga_bg = VGA_COLOR_BLACK;
 uint8_t vga_color;
 uint16_t* vga_buffer = (uint16_t*)VGA_MEMORY;
 
+bool boot_mode = true;
 
 void vga_init(void) {
 	vga_row = 0;
@@ -44,13 +45,17 @@ int vga_putchar(char c) {
 
 		case '\n':
 			vga_column = 0;
-			if (vga_row < 2) {
-				vga_putentryat(' ', vga_color, vga_column, ++vga_row);
-			}
-			else {
-				vga_putentryat('>', vga_color, vga_column++, ++vga_row);
-				update_cursor(vga_column, vga_row+1);
-			}
+            if (!boot_mode) {
+			    if (vga_row < 2) {
+				    vga_putentryat(' ', vga_color, vga_column, ++vga_row);
+			    }
+			    else {
+				    vga_putentryat('>', vga_color, vga_column++, ++vga_row);
+				    update_cursor(vga_column, vga_row+1);
+			    }
+            } else {
+                vga_putentryat(' ', vga_color, vga_column, ++vga_row);
+            }
 			return 1;
 			break;
 

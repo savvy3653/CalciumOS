@@ -43,7 +43,11 @@ extern fn kpanic() callconv(.c) void;
 // irq install
 export fn floppy_init() void {
     irq_install_routine(int_floppy, floppy_handler);
-    floppy_detect_drives();
+    const drives: u8 = floppy_detect_drives();
+    if (drives != 0) {
+        kprintf("No floppies detected.\n");
+        return;
+    }
     reset_floppy();
     specify();
     recalibrate();
@@ -129,13 +133,15 @@ pub export fn floppy_write_sector(lba: u32, buffer: [*]u8) void {
     motor_off();
 }
 
-fn floppy_detect_drives() void {
+fn floppy_detect_drives() u8 {
     outb(0x70, 0x10);
     ksleep(300);
     const drives: u8 = inb(0x71);
+    if (drives == 0) return 1;
     
     kprintf("Slave floppy drive: %s\n", dtypes[drives >> 4].ptr);
     kprintf("Master floppy drive: %s\n", dtypes[drives & 0xF].ptr);
+    return 0;
 }
 
 fn lba_2_chs(lba: u32) struct { cyl: u8, head: u8, sector: u8 } {

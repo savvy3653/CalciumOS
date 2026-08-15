@@ -32,7 +32,6 @@ extern size_t vga_column;
 extern uint8_t vga_color;
 extern uint16_t* vga_buffer;
 
-
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
 	return fg | bg << 4;
 }

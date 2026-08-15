@@ -36,6 +36,7 @@ kernel.o:
 	zig build-obj $(CKERNEL)/fs/fs_init.zig $(ZIGFLAGS_DEBUG) -femit-bin=fs_init.o
 	zig build-obj $(CKERNEL)/timer/timer.zig $(ZIGFLAGS_DEBUG) -femit-bin=timer.o
 	zig build-obj $(CKERNEL)/drivers/floppy.zig $(ZIGFLAGS_DEBUG) -femit-bin=floppy.o
+	zig build-obj $(CKERNEL)/drivers/ata.zig $(ZIGFLAGS_DEBUG) -femit-bin=ata.o
 	i686-elf-gcc -c $(CKERNEL)/vga/vga.c -o vga.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/vga/text_cursor.c -o text_cursor.o $(CFLAGS)
 	i686-elf-gcc -c $(CKERNEL)/dt/gdt.c -o gdt.o $(CFLAGS)
@@ -61,7 +62,9 @@ init:
 	export PREFIX="$HOME/opt/cross"
 	export TARGET=i686-elf
 	export PATH="$PREFIX/bin:$PATH"
+	export PATH=$PATH:/snap/bin
 start:
-	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -boot d
+	qemu-system-i386 -fda floppy.img -drive file=disk.img,format=raw,if=ide -m 2048M -cdrom myos.iso -boot d
 startdbg:
-	qemu-system-i386 -fda floppy.img -m 2048M -cdrom myos.iso -boot d -s -S
+	qemu-system-i386 -fda floppy.img -drive file=disk.img,format=raw,if=ide -m 2048M -cdrom myos.iso -boot d -s S
+

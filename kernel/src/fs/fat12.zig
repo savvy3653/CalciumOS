@@ -13,41 +13,22 @@ extern fn memcmp(a: *const anyopaque, b: *const anyopaque, n: usize) callconv(.c
 
 var bpb: fs.BPB = undefined;
 
-var FAT_start_sector: u32 = undefined;
-var FAT_sectors: u32 = undefined;
-var rood_dir_start_sector: u32 = undefined;
-var root_dir_sectors: u32 = undefined;
-var data_start_sector: u32 = undefined;
-var data_sectors: u32 = undefined;
+export var FAT_start_sector: u32 = undefined;
+export var FAT_sectors: u32 = undefined;
+export var rood_dir_start_sector: u32 = undefined;
+export var root_dir_sectors: u32 = undefined;
+export var data_start_sector: u32 = undefined;
+export var data_sectors: u32 = undefined;
 
 const sector_size: u16 = 512;
 
-pub export fn fat12_init() void {
-    var buffer: [512]u8 align(@alignOf(fs.BPB)) = undefined;
-    floppy_read_sector(0, &buffer);
-    const tmp: *fs.BPB = @ptrCast(@alignCast(&buffer));
-    bpb = tmp.*;
-
-    FAT_start_sector = bpb.reserved_sector_count;
-    FAT_sectors = bpb.sectors_per_fat * bpb.fat_numbers;
-    rood_dir_start_sector = FAT_start_sector + FAT_sectors;
-    // 32 stands for 'size of dir entry': 
-    root_dir_sectors = (32 * bpb.root_entry_count + bpb.bytes_per_sector - 1) / bpb.bytes_per_sector; 
-    data_start_sector = rood_dir_start_sector + root_dir_sectors;
-    data_sectors = bpb.sectors_total - data_start_sector;
-
-    const cnt_of_clusters: u32 = data_sectors / bpb.sectors_per_cluster;
-    if (cnt_of_clusters <= 4085) {
-        
-    } // TODO: checkup for other fats later
-    else {
-        kprintf("Unknown FAT!\n");
-    }
+pub export fn fat12_init(bpb_s: *const fs.BPB) void {
+    bpb = bpb_s.*;
 }
 
-pub export fn fat12_read_file(fname: [*:0]u8) void {
+pub export fn fat12_read_file(fname: [*:0]u8, read_sector: *const fn(u32, [*]u8) callconv(.c) void) void {
     var de: fs.FAT12_Directory_Entry = undefined;
-    if (fat12_read_directory(fname)) |value| {
+    if (fat12_read_directory(fname, read_sector)) |value| {
         de = value;
     } else |err| {
         switch(err) {
@@ -74,21 +55,15 @@ pub export fn fat12_read_file(fname: [*:0]u8) void {
         const fat_sector: u32 = FAT_start_sector + (fat_offset / sector_size);
         const entry_offset: u32 = fat_offset % sector_size;
 
-        floppy_read_sector(fat_sector, &buffer); // using buffer as FAT table
-
-        if (cluster_num & 1 == 0) { // even
-            cluster_info_num = @as(u32, buffer[entry_offset]) | ((@as(u32, buffer[entry_offset+1]) & 0x0F) << 8);
-        } else { // odd
-            cluster_info_num = (@as(u32, buffer[entry_offset]) >> 4) | (@as(u32, buffer[entry_offset+1]) << 4) | ((@as(u32, buffer[entry_offset+2]) & 0xF0) << 8);
-        }
-        cluster_info_num = cluster_info_num & 0xFFF;
+        read_sector(fat_sector, &buffer); // using buffer as FAT table
+        cluster_info_num = fat12_parse_infonum(&buffer, entry_offset, cluster_num, cluster_info_num);
         
         if (cluster_info_num >= 0xFF8) eof = true;
         if (cluster_info_num == 0xFF7) continue; // 'bad' cluster
 
         // cluster is okay? let's fuckin' read it!
         const first_sector_of_cluster: u32 = data_start_sector + (cluster_num - 2) * bpb.sectors_per_cluster;
-        floppy_read_sector(first_sector_of_cluster, &buffer); // now use buffer as buffer
+        read_sector(first_sector_of_cluster, &buffer); // now use buffer as buffer
         
         for (buffer) |byte| {
             if (byte == 0) break;
@@ -101,15 +76,25 @@ pub export fn fat12_read_file(fname: [*:0]u8) void {
     }
 }
 
+fn fat12_parse_infonum(buffer: []u8, entry_offset: u32, cluster_num: u32, cluster_info_num: u32) u32 {
+    var cin: u32 = cluster_info_num;
+    if (cluster_num & 1 == 0) { // even
+        cin = @as(u32, buffer[entry_offset]) | ((@as(u32, buffer[entry_offset+1]) & 0x0F) << 8);
+    } else { // odd
+        cin = (@as(u32, buffer[entry_offset]) >> 4) | (@as(u32, buffer[entry_offset+1]) << 4) | ((@as(u32, buffer[entry_offset+2]) & 0xF0) << 8);
+    } 
+    return cin & 0xFFF;
+}
+
 
 // goal: find directory entry for specified file
-fn fat12_read_directory(fname: [*:0]u8) !fs.FAT12_Directory_Entry {
+fn fat12_read_directory(fname: [*:0]u8, read_sector: *const fn(u32, [*]u8) callconv(.c) void) !fs.FAT12_Directory_Entry {
     const file_struct = parse_c_filename(fname);
     var buffer: [sector_size]u8 align(@alignOf(fs.FAT12_Directory_Entry)) = undefined;
     
     var dir_sector: u32 = rood_dir_start_sector;
     while (dir_sector < data_start_sector) : (dir_sector += 1) {
-        floppy_read_sector(dir_sector, &buffer);
+        read_sector(dir_sector, &buffer);
 
         var offset: u32 = 0;
         while (offset < sector_size) : (offset += @sizeOf(fs.FAT12_Directory_Entry)) {

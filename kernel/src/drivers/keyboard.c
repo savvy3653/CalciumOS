@@ -66,6 +66,7 @@ const uint32_t uppercase[128] = {
 
 bool capsOn;
 bool capsLock;
+char* kbuffer = "\0";
 
 void keyboard_init() {
     irq_install_routine(INT_KEYBOARD, &keyboard_handler);
