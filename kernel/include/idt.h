@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "stdlib.h"
+#include "stdio.h"
 
 // IRQ's
 #define INT_TIMER 0

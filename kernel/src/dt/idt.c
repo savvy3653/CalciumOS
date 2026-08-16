@@ -1,6 +1,7 @@
 #include "../../include/idt.h"
 #include "../../include/pic.h"
 #include "../../include/vga.h"
+#include "../../include/stdio.h"
 
 extern void idt_flush(uint32_t);
 
@@ -144,6 +145,7 @@ void isr_handler(INT_registers* regs) {
         kprint(exception_messages[regs->int_no]);
         kprint("\n");
         kprint("Exception! System halted!\n");
+        kprintf("Address: %x\n", regs->eip);
         switch (regs->int_no) {
 		case 0:
 

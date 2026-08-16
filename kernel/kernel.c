@@ -17,6 +17,7 @@ extern uint8_t floppy_init(void);
 extern void ata_init(void);
 extern void floppy_read_sector(uint32_t lba, uint8_t* buf);
 extern void ata_read_sector(uint32_t lba, uint8_t* buf);
+extern void ata_write_sector(uint32_t lba, uint8_t* buf);
 extern uint16_t vfs_init(void (*read_sector)(uint32_t, uint8_t*));
 extern void fat12_read_file(const char*, void (*read_sector)(uint32_t, uint8_t*));
 
@@ -76,8 +77,13 @@ void kernel_main(void) {
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-    read_file("README.TXT", ata_read_sector);
-    read_file("HELLO.TXT", ata_read_sector);
+    uint8_t* buffer = kmalloc(512);
+    memset(buffer, 12, 512);
+    ata_write_sector(3, buffer);
+    memset(buffer, 0, 512);
+    ata_read_sector(3, buffer);
+    //read_file("README.TXT", ata_read_sector);
+    //read_file("HELLO.TXT", ata_read_sector);
     //read_file("READM2.TXT");
     //read_file("READM3.TXT");
 

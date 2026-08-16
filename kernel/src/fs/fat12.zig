@@ -76,6 +76,10 @@ pub export fn fat12_read_file(fname: [*:0]u8, read_sector: *const fn(u32, [*]u8)
     }
 }
 
+pub export fn fat12_write_file(fname: [*:0]u8, write_sector: *const fn(u32, [*]u8) callconv(.c) void) void { 
+
+}
+
 fn fat12_parse_infonum(buffer: []u8, entry_offset: u32, cluster_num: u32, cluster_info_num: u32) u32 {
     var cin: u32 = cluster_info_num;
     if (cluster_num & 1 == 0) { // even

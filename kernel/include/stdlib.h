@@ -26,6 +26,7 @@ int32_t ceil(const int32_t a, const int32_t b);
 
 void kpanic(void);
 void outb(uint16_t port, uint8_t val);
+void outw(uint16_t port, uint16_t val);
 uint8_t inb(uint16_t port);
 uint16_t inw(uint16_t port);
 static inline void io_wait(void) {

@@ -131,5 +131,6 @@ void cls() {
 void rs_init(void) {
 	vga_fg = VGA_COLOR_WHITE;
 	vga_bg = VGA_COLOR_RED;
+    boot_mode = true;
 	vga_init();
 }
