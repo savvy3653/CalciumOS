@@ -66,5 +66,5 @@ init:
 start:
 	qemu-system-i386 -fda floppy.img -drive file=disk.img,format=raw,if=ide -m 2048M -cdrom myos.iso -boot d
 startdbg:
-	qemu-system-i386 -fda floppy.img -drive file=disk.img,format=raw,if=ide -m 2048M -cdrom myos.iso -boot d -s S
+	qemu-system-i386 -fda floppy.img -drive file=disk.img,format=raw,if=ide -m 2048M -cdrom myos.iso -boot d -s -S
 

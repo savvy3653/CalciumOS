@@ -123,7 +123,7 @@ pub const BPB = packed struct {
     sectors_per_track: u16,
     heads: u16,
     hidden_sectors: u32,
-    total_sectors: u32,
+    expanded_sectors_total: u32,
     // extended boot record:
     drive_number: u8,
     winnt_flags: u8,

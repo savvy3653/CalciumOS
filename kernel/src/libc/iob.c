@@ -12,3 +12,9 @@ uint8_t inb(uint16_t port) {
                    : "memory");
     return ret;
 }
+
+uint16_t inw(uint16_t port) {
+    uint16_t ret;
+    asm volatile ("inw %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
+}

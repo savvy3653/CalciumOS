@@ -1,4 +1,5 @@
 myos
 myos.iso
 *.o
+*.img
 .vscode
