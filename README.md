@@ -17,6 +17,7 @@ Technical:
 Drivers:
 - Keyboard driver
 - Floppy disk driver (1.44 MB floppies only)
+- ATA driver (*in progress*)
 
 Filesystem:
 - ext2 (*in progress*)
