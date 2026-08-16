@@ -1,1 +1,0 @@
-hello from ATA in FAT12FSsudo mount -o loop disk.img mnt_fat!
