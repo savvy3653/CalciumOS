@@ -65,7 +65,8 @@ pub export fn ata_write_sector(lba: u32, buffer: [*]u8) void {
         const bytes: u16 = @as(u16, buffer[i]) | (@as(u16, buffer[i+1]) << 8);
         outw(0x1F0, bytes);
     }
-    ksleep(1);    outb(0x1F7, 0xE7);  // cache flush
+    ksleep(1);    
+    outb(0x1F7, 0xE7);  // cache flush
     while (true) {  // waiting for BSY to clear
         const ready: u8 = inb(0x1F7);
         if (ready & 0x80 == 0) break;

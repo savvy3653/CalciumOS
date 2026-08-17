@@ -2,8 +2,6 @@
 const std = @import("std");
 const fs = @import("fs.zig");
 
-extern fn floppy_read_sector(lba: u32, buffer: [*]u8) void;
-extern fn ata_read_sector(lba: u32, buffer: [*]u8) void;
 extern fn memcmp(a: *const anyopaque, b: *const anyopaque, n: usize) callconv(.c) i32;
 extern fn kprintf(fmt: [*:0] const u8, ...) callconv(.c) void;
 extern fn ext2_init() void;

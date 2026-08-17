@@ -19,7 +19,8 @@ extern void floppy_read_sector(uint32_t lba, uint8_t* buf);
 extern void ata_read_sector(uint32_t lba, uint8_t* buf);
 extern void ata_write_sector(uint32_t lba, uint8_t* buf);
 extern uint16_t vfs_init(void (*read_sector)(uint32_t, uint8_t*));
-extern void fat12_read_file(const char*, void (*read_sector)(uint32_t, uint8_t*));
+extern void fat12_read_file(const char* fname, uint16_t mode);
+extern void fat12_write_file(const char* fname, const char* data, uint16_t mode);
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 // #if defined(__linux__)
@@ -54,11 +55,13 @@ void kernel_main(void) {
     floppy_init();
     ata_init();
 
-    void (*read_file)(const char*, void (*read_sector)(uint32_t, uint8_t*));
+    void (*read_file)(const char*, uint16_t);
+    void (*write_file)(const char*, const char*, uint16_t);
     uint16_t fs = vfs_init(ata_read_sector);
     switch (fs) {
         case FAT12:
             read_file = fat12_read_file;
+            write_file = fat12_write_file;
             break;
         case FAT16:
             break;
@@ -77,12 +80,9 @@ void kernel_main(void) {
 	kprintf(" All rights reserved.\n");
 	update_cursor(vga_column, vga_row+1);
 
-    uint8_t* buffer = kmalloc(512);
-    memset(buffer, 12, 512);
-    ata_write_sector(3, buffer);
-    memset(buffer, 0, 512);
-    ata_read_sector(3, buffer);
-    //read_file("README.TXT", ata_read_sector);
+    
+    write_file("README.TXT", "metallica govno.", ATA);
+    read_file("README.TXT", ATA);
     //read_file("HELLO.TXT", ata_read_sector);
     //read_file("READM2.TXT");
     //read_file("READM3.TXT");

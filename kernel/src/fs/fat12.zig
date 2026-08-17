@@ -6,10 +6,17 @@ const FileError = error{
     FileNotFound,
 };
 
-extern fn floppy_read_sector(lba: u32, buffer: [*]u8) void;
+const FLOPPY = 0x8814;
+const ATA    = 0x1818;
+
 extern fn kprintf(fmt: [*:0] const u8, ...) callconv(.c) void;
 extern fn ceil(a: u32, b: u32) callconv(.c) u32;
 extern fn memcmp(a: *const anyopaque, b: *const anyopaque, n: usize) callconv(.c) i32;
+
+extern fn floppy_read_sector(lba: u32, buffer: [*]u8) void;
+extern fn floppy_write_sector(lba: u32, buffer: [*]u8) void;
+extern fn ata_read_sector(lba: u32, buffer: [*]u8) void;
+extern fn ata_write_sector(lba: u32, buffer: [*]u8) void;
 
 var bpb: fs.BPB = undefined;
 
@@ -26,7 +33,17 @@ pub export fn fat12_init(bpb_s: *const fs.BPB) void {
     bpb = bpb_s.*;
 }
 
-pub export fn fat12_read_file(fname: [*:0]u8, read_sector: *const fn(u32, [*]u8) callconv(.c) void) void {
+pub export fn fat12_read_file(fname: [*:0]u8, mode: u16) void {
+    var read_sector: *const fn(u32, [*]u8) callconv(.c) void = undefined; 
+    if (mode == FLOPPY) {
+        read_sector = floppy_read_sector;
+    } else if (mode == ATA) {
+        read_sector = ata_read_sector;
+    } else {
+        kprintf("Invalid drive mode.\n");
+        return;
+    }
+
     var de: fs.FAT12_Directory_Entry = undefined;
     if (fat12_read_directory(fname, read_sector)) |value| {
         de = value;
@@ -76,9 +93,65 @@ pub export fn fat12_read_file(fname: [*:0]u8, read_sector: *const fn(u32, [*]u8)
     }
 }
 
-pub export fn fat12_write_file(fname: [*:0]u8, write_sector: *const fn(u32, [*]u8) callconv(.c) void) void { 
+pub export fn fat12_write_file(fname: [*:0]u8, data: [*]u8, mode: u16) void { 
+    var read_sector: *const fn(u32, [*]u8) callconv(.c) void = undefined;
+    var write_sector: *const fn(u32, [*]u8) callconv(.c) void = undefined;
+    if (mode == FLOPPY) {
+        read_sector = floppy_read_sector;
+        write_sector = floppy_write_sector;
+    } else if (mode == ATA) {
+        read_sector = ata_read_sector;
+        write_sector = ata_write_sector;
+    } else {
+        kprintf("Invalid drive mode.\n");
+        return;
+    }
 
+    var de: fs.FAT12_Directory_Entry = undefined;
+    if (fat12_read_directory(fname, read_sector)) |value| {
+        de = value;
+    } else |err| {
+        switch(err) {
+            FileError.FileNotFound =>  {
+                kprintf("File not found.\n");
+                return;
+            }
+        }
+    }
+
+    // parsing clusters
+    // TODO: get de.file_size and add support for a few sectors in file?
+    var cluster_num: u32 = de.first_cluster;
+    var cluster_info_num: u32 = 0;  
+    while (true) {
+        if (cluster_num < 2) {
+            kprintf("Invalid cluster used!\n");
+            break;
+        }
+
+        var eof: bool = false;
+        var buffer: [sector_size]u8 align(512) = undefined;
+        const fat_offset: u32 = cluster_num + (cluster_num / 2);
+        const fat_sector: u32 = FAT_start_sector + (fat_offset / sector_size);
+        const entry_offset: u32 = fat_offset % sector_size;
+
+        read_sector(fat_sector, &buffer); // using buffer as FAT table
+        cluster_info_num = fat12_parse_infonum(&buffer, entry_offset, cluster_num, cluster_info_num);
+        
+        if (cluster_info_num >= 0xFF8) eof = true;
+        if (cluster_info_num == 0xFF7) continue; // 'bad' cluster
+
+        // cluster is okay? let's fuckin' write it!
+        const first_sector_of_cluster: u32 = data_start_sector + (cluster_num - 2) * bpb.sectors_per_cluster;
+        write_sector(first_sector_of_cluster, data);
+        
+        if (eof == true) break;
+
+        // goto next cluster;
+        cluster_num = cluster_info_num;
+    }
 }
+
 
 fn fat12_parse_infonum(buffer: []u8, entry_offset: u32, cluster_num: u32, cluster_info_num: u32) u32 {
     var cin: u32 = cluster_info_num;
