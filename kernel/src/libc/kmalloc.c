@@ -1,8 +1,6 @@
 #include "../../include/memory.h"
 #include "../../include/stdlib.h"
 
-// [heap_block0] ->| memory | [heap_block1] ->| memory | ...
-
 HEAP_block* heap_blocks = (HEAP_block*)METADATA_HEAP_BASE;
 //HEAP_block* heap_blocks_end = heap_blocks; // init
 
