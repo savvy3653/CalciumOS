@@ -49,6 +49,7 @@ kernel.o:
 	nasm -f elf32 -g kernel/src/dt/gdt.asm -o gdtasm.o
 	nasm -f elf32 -g kernel/src/dt/idt.asm -o idtasm.o
 	nasm -f elf32 -g kernel/src/memory/paging.asm -o paging.o
+	nasm -f elf32 -g kernel/src/user/usermode.asm -o usermode.o
 
 myos:
 	$(LD) myos $(LFLAGS) *.o -lgcc

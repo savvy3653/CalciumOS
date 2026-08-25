@@ -4,6 +4,7 @@
 #include "../../include/idt.h"
 #include "../../include/pic.h"
 #include "../../include/vga.h"
+#include "../../include/memory.h"
 
 //#define KEYBOARD_EXT
 
@@ -66,10 +67,14 @@ const uint32_t uppercase[128] = {
 
 bool capsOn;
 bool capsLock;
-char* kbuffer = "\0";
+char* kbuffer; 
+int pos = 0; // position in kbuffer
 
 void keyboard_init() {
     irq_install_routine(INT_KEYBOARD, &keyboard_handler);
+
+    kbuffer = kmalloc(256);
+    kbuffer[0] = '\0';
 }
 
 static bool extended = false;
@@ -131,6 +136,12 @@ void keyboard_handler(INT_registers* regs) {
     } else {
         switch(scanCode) {
             case 1:
+            case 28: // ENTER
+                if (press) kprintf("\n");
+                memset(kbuffer, 0, 256);
+                kbuffer[0] = '\0';
+                pos = 0;
+                break;
             case 29:
             case 56:
             case 59:
@@ -165,10 +176,19 @@ void keyboard_handler(INT_registers* regs) {
                 if (press == 0) {
                     if (capsOn && capsLock) {
                         kprintf("%c", lowercase[scanCode]);
+                        pos += 1;
+                        kbuffer[pos-1] = lowercase[scanCode];
+                        kbuffer[pos] = '\0';
                     } else if (capsOn || capsLock) {
                         kprintf("%c", uppercase[scanCode]);
+                        pos += 1;
+                        kbuffer[pos-1] = uppercase[scanCode];
+                        kbuffer[pos] = '\0';
                     } else {
                         kprintf("%c", lowercase[scanCode]);
+                        pos += 1;
+                        kbuffer[pos-1] = lowercase[scanCode];
+                        kbuffer[pos] = '\0';
                     }
                 }
         }
